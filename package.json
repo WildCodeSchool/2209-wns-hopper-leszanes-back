@@ -23,7 +23,7 @@
   "dependencies": {
     "apollo-server": "3.*",
     "class-validator": "^0.14.0",
-    "graphql": "^16.6.0",
+    "graphql": "15.x",
     "postgres": "^3.3.2",
     "type-graphql": "^1.1.1"
   }
