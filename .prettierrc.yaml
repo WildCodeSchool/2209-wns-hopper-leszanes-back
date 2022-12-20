@@ -4,3 +4,10 @@ tabWidth: 2
 useTabs: false
 semi: true
 bracketSpacing: true
+overrides:
+    - files: '*.yaml'
+      options:
+          singleQuote: true
+          printWidth: 120
+          tabWidth: 4
+          semi: false

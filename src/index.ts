@@ -1,1 +1,2 @@
-console.log("Hello World");
+export const YohannLeTesteur = "reblochon";
+console.log(YohannLeTesteur);

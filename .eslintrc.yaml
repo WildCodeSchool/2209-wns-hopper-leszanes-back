@@ -1,2 +1,40 @@
-extends: 
-  airbnb-typescript-prettier
+env:
+    browser: true
+    es2021: true
+    jest: true
+extends:
+    - airbnb-typescript-prettier
+    - plugin:@typescript-eslint/strict
+    - plugin:@typescript-eslint/recommended-requiring-type-checking
+    - plugin:react/jsx-runtime
+parser: '@typescript-eslint/parser'
+parserOptions:
+    ecmaVersion: 2022
+    project: './tsconfig.json'
+    sourceType: module
+plugins:
+    - '@typescript-eslint'
+root: true
+rules:
+    import/no-default-export: error
+    import/prefer-default-export: 'off'
+    prefer-const: error
+
+    func-style:
+        - error
+        - expression
+        - allowArrowFunctions: true
+    func-names:
+        - error
+        - never
+    prefer-arrow-callback:
+        - error
+        - allowNamedFunctions: false
+    no-mixed-spaces-and-tabs: warn
+    camelcase: error
+    '@typescript-eslint/consistent-type-definitions':
+        - error
+        - type
+    import/no-extraneous-dependencies:
+        - error
+        - devDependencies: true
