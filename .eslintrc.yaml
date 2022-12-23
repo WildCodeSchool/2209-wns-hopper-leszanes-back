@@ -16,7 +16,6 @@ plugins:
     - '@typescript-eslint'
 root: true
 rules:
-
     import/no-default-export: error
     import/prefer-default-export: 'off'
     prefer-const: error
@@ -39,3 +38,7 @@ rules:
     import/no-extraneous-dependencies:
         - error
         - devDependencies: true
+    prettier/prettier:
+        - error
+        - endOfLine: auto
+    class-methods-use-this: 'off'
