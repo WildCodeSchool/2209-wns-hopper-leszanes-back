@@ -1,6 +1,6 @@
-import { Resolver, Query, Mutation, Arg, ID } from "type-graphql";
+import { Resolver, Query, Mutation, Arg, ID, Ctx } from "type-graphql";
 import { hash, verify } from "argon2";
-import { sign } from "jsonwebtoken";
+import { sign, verify as jwtVerify } from "jsonwebtoken";
 import { User } from "../entities/User/User";
 import { UserCreateInput } from "../entities/User/UserCreateInput";
 import { UserUpdateInput } from "../entities/User/UserUpdateInput";
@@ -29,6 +29,34 @@ export class UserResolver {
     }
 
     return user;
+  }
+
+  // get by id
+  @Query(() => User)
+  async getCurrentUser(
+    @Ctx() context: { token: string | null }
+  ): Promise<User | null> {
+    const { token } = context;
+
+    if (!token || !process.env.JWT_SECRET) {
+      return null;
+    }
+
+    try {
+      const { id } = jwtVerify(token, process.env.JWT_SECRET);
+      const user = await userRepository.findOne({
+        where: { id },
+        relations: [],
+      });
+
+      if (!user) {
+        return null;
+      }
+
+      return user;
+    } catch (error) {
+      return null;
+    }
   }
 
   // create
@@ -98,15 +126,11 @@ export class UserResolver {
         where: { email },
       });
 
-      if (!user) {
-        return null;
-      }
-
-      if (!(await verify(user.password, password))) {
-        return null;
-      }
-
-      if (!process.env.JWT_SECRET) {
+      if (
+        !user ||
+        !(await verify(user.password, password)) ||
+        !process.env.JWT_SECRET
+      ) {
         return null;
       }
 
