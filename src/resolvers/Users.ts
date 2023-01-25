@@ -1,8 +1,11 @@
-import { Resolver, Query, Mutation, Arg, ID } from "type-graphql";
+import { Resolver, Query, Mutation, Arg, ID, Ctx } from "type-graphql";
+import { hash, verify } from "argon2";
+import { sign, verify as jwtVerify } from "jsonwebtoken";
 import { User } from "../entities/User/User";
 import { UserCreateInput } from "../entities/User/UserCreateInput";
 import { UserUpdateInput } from "../entities/User/UserUpdateInput";
 import { userRepository } from "../repositories/userRepository";
+import { UserSignInResponse } from "../entities/User/UserSignInResponse";
 
 @Resolver()
 export class UserResolver {
@@ -28,14 +31,53 @@ export class UserResolver {
     return user;
   }
 
+  // get by id
+  @Query(() => User, { nullable: true })
+  async getCurrentUser(
+    @Ctx() context: { token: string | null }
+  ): Promise<User | null> {
+    const { token } = context;
+
+    if (!token || !process.env.JWT_SECRET) {
+      return null;
+    }
+
+    try {
+      const payload = jwtVerify(token, process.env.JWT_SECRET);
+
+      if (typeof payload !== "string" && "id" in payload) {
+        const user = await userRepository.findOne({
+          where: { id: payload.id as number },
+          relations: [],
+        });
+
+        if (!user) {
+          throw new Error("User not found");
+          return null;
+        }
+
+        return user;
+      }
+      return null;
+    } catch (error) {
+      return null;
+    }
+  }
+
   // create
   @Mutation(() => User)
-  async createUser(@Arg("data") data: UserCreateInput): Promise<User> {
+  async createUser(
+    @Arg("data", () => UserCreateInput) data: UserCreateInput
+  ): Promise<User> {
     const newUser = {
       ...data,
+      storage: 0,
       created_at: new Date(),
       updated_at: new Date(),
     };
+
+    const hashedPassword = await hash(newUser.password);
+    newUser.password = hashedPassword;
     const result = await userRepository.save(newUser);
     return result;
   }
@@ -77,6 +119,39 @@ export class UserResolver {
       }
     } else {
       return false;
+    }
+  }
+
+  // sign in
+  @Mutation(() => UserSignInResponse, { nullable: true })
+  async signIn(@Arg("email") email: string, @Arg("password") password: string) {
+    try {
+      if (!email || !password) {
+        return null;
+      }
+      const user = await userRepository.findOne({
+        where: { email },
+      });
+
+      if (
+        !user ||
+        !(await verify(user.password, password)) ||
+        !process.env.JWT_SECRET
+      ) {
+        return null;
+      }
+      const token = sign(
+        {
+          id: user.id,
+        },
+        process.env.JWT_SECRET
+      );
+      return {
+        user,
+        token,
+      };
+    } catch (error) {
+      return null;
     }
   }
 }

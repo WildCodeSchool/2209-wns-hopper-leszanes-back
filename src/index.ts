@@ -6,10 +6,6 @@ import { UserResolver } from "./resolvers/Users";
 
 const PORT = 5000;
 
-console.log("DB_PASSWORD", process.env.DB_PASSWORD);
-console.log("DB_NAME", process.env.DB_NAME);
-console.log("DB_USER", process.env.DB_USER);
-
 export const bootstrap = async (): Promise<void> => {
   const schema = await buildSchema({
     resolvers: [UserResolver],
@@ -18,6 +14,20 @@ export const bootstrap = async (): Promise<void> => {
   const server = new ApolloServer({
     schema,
     cors: true,
+    context: ({ req }) => {
+      const authHeader = req.headers.authorization;
+      if (
+        authHeader &&
+        process.env.JWT_SECRET &&
+        authHeader.startsWith("Bearer ")
+      ) {
+        const token = authHeader.split(" ")[1];
+        return { token };
+      }
+      return {
+        token: null,
+      };
+    },
   });
 
   // Start the server
