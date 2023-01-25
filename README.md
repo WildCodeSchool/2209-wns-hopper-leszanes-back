@@ -1,1 +1,1 @@
-docker compose -f docker-compose.yaml up --build
+docker compose up --build
