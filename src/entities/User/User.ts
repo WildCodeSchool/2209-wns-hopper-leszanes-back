@@ -4,7 +4,7 @@ import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
 @Entity()
 @ObjectType()
 export class User {
-  @PrimaryGeneratedColumn() // ==> a changer pour généré des uuID
+  @PrimaryGeneratedColumn()
   @Field(() => ID)
   id: number;
 
