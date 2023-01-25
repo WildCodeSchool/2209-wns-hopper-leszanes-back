@@ -17,6 +17,8 @@ services:
         restart: unless-stopped
         ports:
             - '5000:5000'
+        links:
+            - db
         depends_on:
             - db
         command: pnpm run start

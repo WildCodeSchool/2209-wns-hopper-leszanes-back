@@ -1,4 +1,5 @@
 import { Resolver, Query, Mutation, Arg, ID } from "type-graphql";
+import { hash } from "argon2";
 import { User } from "../entities/User/User";
 import { UserCreateInput } from "../entities/User/UserCreateInput";
 import { UserUpdateInput } from "../entities/User/UserUpdateInput";
@@ -30,12 +31,18 @@ export class UserResolver {
 
   // create
   @Mutation(() => User)
-  async createUser(@Arg("data") data: UserCreateInput): Promise<User> {
+  async createUser(
+    @Arg("data", () => UserCreateInput) data: UserCreateInput
+  ): Promise<User> {
     const newUser = {
       ...data,
+      storage: 0,
       created_at: new Date(),
       updated_at: new Date(),
     };
+
+    const hashedPassword = await hash(newUser.password);
+    newUser.password = hashedPassword;
     const result = await userRepository.save(newUser);
     return result;
   }

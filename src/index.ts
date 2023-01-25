@@ -6,10 +6,6 @@ import { UserResolver } from "./resolvers/Users";
 
 const PORT = 5000;
 
-console.log("DB_PASSWORD", process.env.DB_PASSWORD);
-console.log("DB_NAME", process.env.DB_NAME);
-console.log("DB_USER", process.env.DB_USER);
-
 export const bootstrap = async (): Promise<void> => {
   const schema = await buildSchema({
     resolvers: [UserResolver],

@@ -1,4 +1,4 @@
-import { IsEmail, Length, MinLength } from "class-validator";
+import { IsEmail, IsStrongPassword, Length } from "class-validator";
 import { Field, InputType } from "type-graphql";
 
 @InputType()
@@ -14,9 +14,10 @@ export class UserCreateInput {
 
   // 12 maj caract spec
   @Field()
-  @MinLength(4)
+  @Length(12, 60)
+  @IsStrongPassword()
   password: string;
 
-  @Field()
-  storage: number;
+  // @Field()
+  // storage: number;
 }
