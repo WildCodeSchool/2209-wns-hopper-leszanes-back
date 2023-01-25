@@ -1,8 +1,11 @@
 import { Resolver, Query, Mutation, Arg, ID } from "type-graphql";
+import { hash, verify } from "argon2";
+import { sign } from "jsonwebtoken";
 import { User } from "../entities/User/User";
 import { UserCreateInput } from "../entities/User/UserCreateInput";
 import { UserUpdateInput } from "../entities/User/UserUpdateInput";
 import { userRepository } from "../repositories/userRepository";
+import { UserSignInResponse } from "../entities/User/UserSignInResponse";
 
 @Resolver()
 export class UserResolver {
@@ -77,6 +80,49 @@ export class UserResolver {
       }
     } else {
       return false;
+    }
+  }
+
+  // sign in
+  @Mutation(() => UserSignInResponse, { nullable: true })
+  async signIn(
+    @Arg("email") email: string,
+    @Arg("password") password: string
+  ): Promise<UserSignInResponse | null> {
+    try {
+      if (!email || !password) {
+        return null;
+      }
+
+      const user = await userRepository.findOne({
+        where: { email },
+      });
+
+      if (!user) {
+        return null;
+      }
+
+      if (!(await verify(user.password, password))) {
+        return null;
+      }
+
+      if (!process.env.JWT_SECRET) {
+        return null;
+      }
+
+      const token = sign(
+        {
+          id: user.id,
+        },
+        process.env.JWT_SECRET
+      );
+
+      return {
+        user,
+        token,
+      };
+    } catch (error) {
+      return null;
     }
   }
 }
