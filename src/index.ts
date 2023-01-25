@@ -16,10 +16,9 @@ export const bootstrap = async (): Promise<void> => {
     cors: true,
     context: ({ req }) => {
       const authHeader = req.headers.authorization;
-
       if (
         authHeader &&
-        process.env.ACCESS_TOKEN_SECRET &&
+        process.env.JWT_SECRET &&
         authHeader.startsWith("Bearer ")
       ) {
         const token = authHeader.split(" ")[1];

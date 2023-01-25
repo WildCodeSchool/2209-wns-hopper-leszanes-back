@@ -1,7 +1,7 @@
-import { Field, InputType } from "type-graphql";
+import { Field, ObjectType } from "type-graphql";
 import { User } from "./User";
 
-@InputType()
+@ObjectType()
 export class UserSignInResponse {
   @Field()
   user: User;

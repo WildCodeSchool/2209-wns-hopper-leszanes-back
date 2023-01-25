@@ -32,7 +32,7 @@ export class UserResolver {
   }
 
   // get by id
-  @Query(() => User)
+  @Query(() => User, { nullable: true })
   async getCurrentUser(
     @Ctx() context: { token: string | null }
   ): Promise<User | null> {
@@ -43,17 +43,22 @@ export class UserResolver {
     }
 
     try {
-      const { id } = jwtVerify(token, process.env.JWT_SECRET);
-      const user = await userRepository.findOne({
-        where: { id },
-        relations: [],
-      });
+      const payload = jwtVerify(token, process.env.JWT_SECRET);
 
-      if (!user) {
-        return null;
+      if (typeof payload !== "string" && "id" in payload) {
+        const user = await userRepository.findOne({
+          where: { id: payload.id as number },
+          relations: [],
+        });
+
+        if (!user) {
+          throw new Error("User not found");
+          return null;
+        }
+
+        return user;
       }
-
-      return user;
+      return null;
     } catch (error) {
       return null;
     }
@@ -119,15 +124,11 @@ export class UserResolver {
 
   // sign in
   @Mutation(() => UserSignInResponse, { nullable: true })
-  async signIn(
-    @Arg("email") email: string,
-    @Arg("password") password: string
-  ): Promise<UserSignInResponse | null> {
+  async signIn(@Arg("email") email: string, @Arg("password") password: string) {
     try {
       if (!email || !password) {
         return null;
       }
-
       const user = await userRepository.findOne({
         where: { email },
       });
@@ -139,14 +140,12 @@ export class UserResolver {
       ) {
         return null;
       }
-
       const token = sign(
         {
           id: user.id,
         },
         process.env.JWT_SECRET
       );
-
       return {
         user,
         token,
