@@ -17,7 +17,7 @@ export class UserResolver {
   }
 
   // get by id
-  @Query(() => User)
+  @Query(() => User, { nullable: true })
   async getUser(@Arg("id", () => ID) id: number): Promise<User | null> {
     const user = await userRepository.findOne({
       where: { id },
