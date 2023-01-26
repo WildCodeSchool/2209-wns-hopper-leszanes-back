@@ -15,6 +15,20 @@ export const bootstrap = async (): Promise<void> => {
   const server = new ApolloServer({
     schema,
     cors: true,
+    context: ({ req }) => {
+      const authHeader = req.headers.authorization;
+      if (
+        authHeader &&
+        process.env.JWT_SECRET &&
+        authHeader.startsWith("Bearer ")
+      ) {
+        const token = authHeader.split(" ")[1];
+        return { token };
+      }
+      return {
+        token: null,
+      };
+    },
   });
 
   // Start the server
