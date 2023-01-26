@@ -4,6 +4,9 @@ import { Length } from "class-validator";
 @InputType()
 export class FileUpdateInput {
   @Field()
+  id: number;
+
+  @Field()
   @Length(2, 50)
   name: string;
 
