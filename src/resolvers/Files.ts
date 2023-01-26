@@ -30,8 +30,6 @@ export class FileResolver {
   // create
   @Mutation(() => File)
   async createFile(@Arg("data") data: FileCreateInput): Promise<File> {
-    console.log(data);
-
     const newFile = {
       ...data,
       created_at: new Date(),
