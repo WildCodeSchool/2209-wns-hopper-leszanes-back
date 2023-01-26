@@ -9,7 +9,7 @@
     "format": "prettier --write src/**/*.{js,jsx,ts,tsx}",
     "lint": "eslint --fix src/**/*.{js,jsx,ts,tsx}",
     "clean": "format && lint",
-    "start": "ts-node-dev src/index.ts"
+    "start": "ts-node-dev --poll src/index.ts"
   },
   "keywords": [],
   "author": "",
@@ -31,7 +31,8 @@
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
-    "graphql": "15.x",
+    "graphql": "~15.8.0",
+    "graphql-upload": "^16.0.2",
     "pg": "^8.8.0",
     "type-graphql": "^1.1.1",
     "typeorm": "^0.3.11",
