@@ -2,6 +2,7 @@ import { DataSource } from "typeorm";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import * as dotenv from "dotenv";
 import { User } from "../entities/User/User";
+import { File } from "../entities/File/File";
 
 dotenv.config();
 
@@ -23,5 +24,5 @@ export const dataSource = new DataSource({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   synchronize: true,
-  entities: [User],
+  entities: [User, File],
 });

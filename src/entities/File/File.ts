@@ -18,15 +18,7 @@ export class File {
 
   @Column()
   @Field()
-  file: string;
-
-  @Column()
-  @Field()
   type: string;
-
-  @Column()
-  @Field()
-  size: number;
 
   @Column()
   @Field()
