@@ -1,15 +1,26 @@
-import { Resolver, Query, Mutation, Arg, ID, Ctx } from "type-graphql";
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Arg,
+  ID,
+  Ctx,
+  Authorized,
+} from "type-graphql";
 import { hash, verify } from "argon2";
-import { sign, verify as jwtVerify } from "jsonwebtoken";
 import { User } from "../entities/User/User";
 import { UserCreateInput } from "../entities/User/UserCreateInput";
 import { UserUpdateInput } from "../entities/User/UserUpdateInput";
 import { userRepository } from "../repositories/userRepository";
-import { UserSignInResponse } from "../entities/User/UserSignInResponse";
+import { UserWithTokenResponse } from "../entities/User/UserWithTokenResponse";
+import { getToken } from "../utils/getToken";
+import { AuthCheckerType } from "../auth";
 
 @Resolver()
 export class UserResolver {
-  // get all
+  // get all users
+  // only connected user may read that
+  @Authorized()
   @Query(() => [User])
   async getUsers(): Promise<User[]> {
     const users = await userRepository.find();
@@ -31,55 +42,40 @@ export class UserResolver {
     return user;
   }
 
-  // get by id
+  @Authorized()
   @Query(() => User, { nullable: true })
-  async getCurrentUser(
-    @Ctx() context: { token: string | null }
-  ): Promise<User | null> {
-    const { token } = context;
-
-    if (!token || !process.env.JWT_SECRET) {
-      return null;
-    }
-
-    try {
-      const payload = jwtVerify(token, process.env.JWT_SECRET);
-
-      if (typeof payload !== "string" && "id" in payload) {
-        const user = await userRepository.findOne({
-          where: { id: payload.id as number },
-          relations: [],
-        });
-
-        if (!user) {
-          throw new Error("User not found");
-          return null;
-        }
-
-        return user;
-      }
-      return null;
-    } catch (error) {
-      return null;
-    }
+  getCurrentUser(@Ctx() context: AuthCheckerType): User | null {
+    return context.user;
   }
 
   // create
-  @Mutation(() => User)
-  async createUser(
-    @Arg("data", () => UserCreateInput) data: UserCreateInput
-  ): Promise<User> {
-    const newUser = {
-      ...data,
-      storage: 0,
-      created_at: new Date(),
-      updated_at: new Date(),
-    };
+  @Mutation(() => UserWithTokenResponse, { nullable: true })
+  async createUser(@Arg("data", () => UserCreateInput) data: UserCreateInput) {
+    try {
+      const newUser = {
+        ...data,
+        storage: 0,
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
 
-    const hashedPassword = await hash(newUser.password);
-    newUser.password = hashedPassword;
-    const result = await userRepository.save(newUser);
-    return result;
+      const hashedPassword = await hash(newUser.password);
+      newUser.password = hashedPassword;
+      const user = await userRepository.save(newUser);
+
+      const token = getToken(user);
+
+      if (!token) {
+        return null;
+      }
+
+      return {
+        user,
+        token,
+      };
+    } catch (error) {
+      return null;
+    }
   }
 
   // update
@@ -123,34 +119,35 @@ export class UserResolver {
   }
 
   // sign in
-  @Mutation(() => UserSignInResponse, { nullable: true })
+  @Mutation(() => UserWithTokenResponse, { nullable: true })
   async signIn(@Arg("email") email: string, @Arg("password") password: string) {
     try {
       if (!email || !password) {
         return null;
       }
+
       const user = await userRepository.findOne({
         where: { email },
       });
 
-      if (
-        !user ||
-        !(await verify(user.password, password)) ||
-        !process.env.JWT_SECRET
-      ) {
+      if (!user || !(await verify(user.password, password))) {
         return null;
       }
-      const token = sign(
-        {
-          id: user.id,
-        },
-        process.env.JWT_SECRET
-      );
-      return {
-        user,
-        token,
-      };
-    } catch (error) {
+
+      const token = getToken(user);
+
+      if (!token) {
+        return null;
+      }
+
+      if (await verify(user.password, password)) {
+        return {
+          user,
+          token,
+        };
+      }
+      return null;
+    } catch (err) {
       return null;
     }
   }
