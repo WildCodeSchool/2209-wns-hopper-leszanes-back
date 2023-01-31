@@ -4,12 +4,14 @@ import { buildSchema } from "type-graphql";
 import { dataSource } from "./utils/dataSource";
 import { UserResolver } from "./resolvers/Users";
 import { FileResolver } from "./resolvers/Files";
+import { authChecker } from "./auth";
 
 const PORT = 5000;
 
 export const bootstrap = async (): Promise<void> => {
   const schema = await buildSchema({
     resolvers: [UserResolver, FileResolver],
+    authChecker,
   });
 
   const server = new ApolloServer({

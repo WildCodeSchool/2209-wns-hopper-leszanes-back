@@ -2,7 +2,7 @@ import { Field, ObjectType } from "type-graphql";
 import { User } from "./User";
 
 @ObjectType()
-export class UserSignInResponse {
+export class UserWithTokenResponse {
   @Field()
   user: User;
 
