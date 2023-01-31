@@ -59,11 +59,21 @@ bootstrap()
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
     app.options("*", cors()); // include before other routes
+
+    const renameFile = multer.diskStorage({
+      destination(req, file, cb) {
+        cb(null, "uploads/");
+      },
+      filename(req, file, cb) {
+        cb(null, `${file.originalname}`);
+      },
+    });
+
     const upload = multer({
-      dest: "uploads/",
       limits: {
         fileSize: 100000000,
       },
+      storage: renameFile,
       fileFilter(_, file, cb) {
         if (
           !file.originalname.match(
@@ -79,7 +89,6 @@ bootstrap()
             )
           );
         }
-
         cb(null, true);
         return null;
       },
