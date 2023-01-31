@@ -17,6 +17,7 @@ services:
         restart: unless-stopped
         ports:
             - '5000:5000'
+            - '4000:4000'
         links:
             - db
         depends_on:
@@ -24,6 +25,7 @@ services:
         command: pnpm run start
         volumes:
             - ./src:/api/src
+            - ./data/uploads:/api/uploads
     adminer:
         image: adminer
         container_name: ztransfer_adminer
