@@ -98,7 +98,7 @@ bootstrap()
       },
     });
 
-    app.post("/files/upload", (req, res) => {
+    app.post("/files/upload", upload.single("file"), (req, res) => {
       const filesUpload = req.files;
       const storageRemaning = 10000;
       let totalSize = 0;
@@ -128,7 +128,7 @@ bootstrap()
             message: "You don't have enough storage space",
           });
         }
-        MakeZip(file);
+        // MakeZip(file);
       }
 
       return res.json({
@@ -178,12 +178,12 @@ bootstrap()
   })
   .catch((err) => console.error(err));
 
-const MakeZip = async (file: Express.Multer.File) => {
-  const zip = new JSZip();
+// const MakeZip = async (file: Express.Multer.File) => {
+//   const zip = new JSZip();
 
-  await zip.generateAsync().then((content) => {
-    saveAs(content, "example.zip");
-  });
+//   await zip.generateAsync().then((content) => {
+//     saveAs(content, "example.zip");
+//   });
 
-  zip.file(file.originalname, file.buffer);
-};
+//   zip.file(file.originalname, file.buffer);
+// };
