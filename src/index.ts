@@ -98,7 +98,7 @@ bootstrap()
       },
     });
 
-    app.post("/files/upload", upload.single("file"), (req, res) => {
+    app.post("/files/upload", upload.array("files"), (req, res) => {
       const filesUpload = req.files;
       const storageRemaning = 10000;
       let totalSize = 0;
