@@ -10,13 +10,14 @@ import { UserResolver } from "./resolvers/Users";
 import { FileResolver } from "./resolvers/Files";
 import { authChecker } from "./auth";
 import { shouldCompress } from "./utils/shouldCompress";
+import { ContactResolver } from "./resolvers/Contact";
 
 const GRAPHQL_PORT = 5000;
 const EXPRESS_PORT = 4000;
 
 export const bootstrap = async () => {
   const schema = await buildSchema({
-    resolvers: [UserResolver, FileResolver],
+    resolvers: [UserResolver, FileResolver, ContactResolver],
     authChecker,
   });
 

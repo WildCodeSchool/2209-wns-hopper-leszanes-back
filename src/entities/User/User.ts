@@ -1,5 +1,11 @@
 import { ObjectType, Field, ID } from "type-graphql";
-import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToMany,
+  JoinTable,
+} from "typeorm";
 
 @Entity()
 @ObjectType()
@@ -19,6 +25,14 @@ export class User {
   @Column()
   password: string;
 
+  @ManyToMany(() => User, (user) => user.contacts)
+  parent: User[];
+
+  @Field(() => [User])
+  @ManyToMany(() => User, (user) => user.parent)
+  @JoinTable()
+  contacts: User[];
+
   @Column()
   @Field()
   created_at: Date;
@@ -26,8 +40,4 @@ export class User {
   @Column()
   @Field()
   updated_at: Date;
-
-  @Column()
-  @Field()
-  storage: number;
 }
