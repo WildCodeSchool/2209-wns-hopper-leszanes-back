@@ -22,6 +22,14 @@ export class File {
 
   @Column()
   @Field()
+  size: number;
+
+  @Column()
+  @Field()
+  user_id: number;
+
+  @Column()
+  @Field()
   is_private: boolean;
 
   @Column()

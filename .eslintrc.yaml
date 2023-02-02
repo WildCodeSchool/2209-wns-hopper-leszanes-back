@@ -42,3 +42,4 @@ rules:
         - error
         - endOfLine: auto
     class-methods-use-this: 'off'
+    no-restricted-syntax: 'off'

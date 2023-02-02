@@ -29,5 +29,9 @@ export class User {
 
   @Column()
   @Field()
+  remaining_storage: number;
+
+  @Column()
+  @Field()
   storage: number;
 }
