@@ -27,7 +27,7 @@ export class User {
   @Field()
   updated_at: Date;
 
-  @Column()
+  @Column({ default: 0 })
   @Field()
   remaining_storage: number;
 

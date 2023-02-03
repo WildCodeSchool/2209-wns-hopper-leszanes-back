@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Arg, ID } from "type-graphql";
+import { Resolver, Query, Mutation, Arg, ID, Authorized } from "type-graphql";
 import { File } from "../entities/File/File";
 import { fileRepository } from "../repositories/fileRepository";
 import { FileCreateInput } from "../entities/File/FileCreateInput";
@@ -28,6 +28,7 @@ export class FileResolver {
   }
 
   // create
+  @Authorized()
   @Mutation(() => File)
   async createFile(@Arg("data") data: FileCreateInput): Promise<File> {
     const newFile = {

@@ -1,4 +1,4 @@
-import { ObjectType, Field, ID } from "type-graphql";
+import { ObjectType, Field, ID, Int } from "type-graphql";
 import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
@@ -14,6 +14,10 @@ export class File {
 
   @Column()
   @Field()
+  fileName: string;
+
+  @Column()
+  @Field()
   description: string;
 
   @Column()
@@ -25,8 +29,8 @@ export class File {
   size: number;
 
   @Column()
-  @Field()
-  user_id: number;
+  @Field(() => Int)
+  created_by: number;
 
   @Column()
   @Field()

@@ -1,6 +1,6 @@
 import multer from "multer";
 import compression from "compression";
-import JSZip from "jszip";
+// import JSZip from "jszip";
 /* eslint-disable no-console */
 import { ApolloServer } from "apollo-server";
 import { buildSchema } from "type-graphql";
@@ -100,9 +100,9 @@ bootstrap()
 
     app.post("/files/upload", upload.array("files"), (req, res) => {
       const filesUpload = req.files;
-      const storageRemaning = 10000;
+      const storageRemaning = 10000000;
       let totalSize = 0;
-      const zip = new JSZip();
+      // const zip = new JSZip();
 
       if (filesUpload === undefined) {
         return res.json({
@@ -135,7 +135,7 @@ bootstrap()
         status: "success",
         message: "File uploaded successfully",
         data: {
-          file: zip,
+          // file: zip,
         },
       });
     });
