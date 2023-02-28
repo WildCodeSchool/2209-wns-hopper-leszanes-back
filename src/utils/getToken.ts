@@ -2,7 +2,8 @@ import { sign } from "jsonwebtoken";
 import { User } from "../entities/User/User";
 
 export const getToken = (user: User) => {
-  if (!process.env.JWT_SECRET) return null;
+  if (!process.env.JWT_SECRET)
+    throw new Error("JWT_SECRET env variable is not defined");
   try {
     const token = sign(
       {
@@ -11,7 +12,7 @@ export const getToken = (user: User) => {
       process.env.JWT_SECRET
     );
     return token;
-  } catch (error) {
-    return null;
+  } catch (error: any) {
+    throw new Error(error);
   }
 };
