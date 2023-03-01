@@ -6,6 +6,7 @@
   "scripts": {
     "test": "vitest",
     "test:ui": "vitest --ui",
+    "test:ci": "vitest run",
     "format": "prettier --write src/**/*.{js,jsx,ts,tsx}",
     "lint": "eslint --fix src/**/*.{js,jsx,ts,tsx}",
     "clean": "format && lint",
@@ -42,6 +43,7 @@
     "multer": "1.4.5-lts.1",
     "nodemailer": "^6.9.1",
     "pg": "^8.8.0",
+    "reflect-metadata": "^0.1.13",
     "type-graphql": "^1.1.1",
     "typeorm": "^0.3.11",
     "vitest": "^0.26.1"

@@ -24,6 +24,7 @@ specifiers:
   multer: 1.4.5-lts.1
   nodemailer: ^6.9.1
   pg: ^8.8.0
+  reflect-metadata: ^0.1.13
   ts-node-dev: ^2.0.0
   type-graphql: ^1.1.1
   typeorm: ^0.3.11
@@ -43,6 +44,7 @@ dependencies:
   multer: 1.4.5-lts.1
   nodemailer: 6.9.1
   pg: 8.8.0
+  reflect-metadata: 0.1.13
   type-graphql: 1.1.1_yxlhq5elwzdhphazhcbwh6wmlq
   typeorm: 0.3.11_pg@8.8.0
   vitest: 0.26.1_@vitest+ui@0.26.1
