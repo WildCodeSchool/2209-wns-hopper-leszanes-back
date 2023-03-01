@@ -22,7 +22,7 @@ services:
             - db
         depends_on:
             - db
-        command: pnpm run start
+        command: pnpm start
         volumes:
             - ./src:/api/src
             - ./data/uploads:/api/uploads

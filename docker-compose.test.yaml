@@ -1,0 +1,27 @@
+services:
+    db:
+        image: postgres
+        container_name: ztransfer_db_test
+        environment:
+            POSTGRES_PASSWORD: 'test'
+            POSTGRES_USER: 'test'
+            POSTGRES_DB: 'test'
+        ports:
+            - '5432:5432'
+        restart: unless-stopped
+    api:
+        build: ./
+        container_name: ztransfer_api_test
+        restart: unless-stopped
+        ports:
+            - '5000:5000'
+            - '4000:4000'
+        links:
+            - db
+        depends_on:
+            - db
+        command: pnpm test ./tests ${JEST_OPTIONS}
+        volumes:
+            - ./src:/api/src
+            - ./data/uploads:/api/uploads
+            - ./tests:/api/tests
