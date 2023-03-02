@@ -6,8 +6,10 @@ import { FileUpdateInput } from "../entities/File/FileUpdateInput";
 
 @Resolver()
 export class FileResolver {
+  // Get all files
   @Query(() => [File])
   async getFiles(): Promise<File[]> {
+    console.log("ça passe ici tkt bb");
     const files = await fileRepository.find();
     return files;
   }

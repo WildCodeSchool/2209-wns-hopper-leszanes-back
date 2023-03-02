@@ -12,7 +12,7 @@ export class File {
   @Field()
   name: string;
 
-  @Column()
+  @Column({ default: "fileName" })
   @Field()
   fileName: string;
 

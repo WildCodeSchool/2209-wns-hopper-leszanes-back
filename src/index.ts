@@ -120,8 +120,10 @@ bootstrap()
 
       for (const file of filesUpload) {
         totalSize += file.size;
-        console.log(file.originalname);
-
+        // const data = {
+        //   name: file.originalname,
+        //   fileName: file.filename
+        // }
         if (totalSize > storageRemaning) {
           return res.json({
             status: "error",
@@ -130,12 +132,15 @@ bootstrap()
         }
         // MakeZip(file);
       }
-
+      console.log(filesUpload[0].originalname);
       return res.json({
         status: "success",
         message: "File uploaded successfully",
+        // Quand les zips seront gérés, modifier les filesUpload[0] par le zip généré
         data: {
-          // file: zip,
+          fileName: filesUpload[0].filename,
+          size: filesUpload[0].size,
+          fileType: filesUpload[0].mimetype,
         },
       });
     });
