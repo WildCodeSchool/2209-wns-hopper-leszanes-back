@@ -9,19 +9,16 @@ export class FileResolver {
   // Get all files
   @Query(() => [File])
   async getFiles(): Promise<File[]> {
-    console.log("ça passe ici tkt bb");
     const files = await fileRepository.find();
     return files;
   }
 
-  // get by id
+  // get by unique filename
   @Query(() => File, { nullable: true })
-  async getFile(@Arg("name") name: string): Promise<File | null> {
+  async getFile(@Arg("filename") filename: string): Promise<File | null> {
     const file = await fileRepository.findOne({
-      where: { name },
-      relations: [],
+      where: { filename },
     });
-
     if (!file) {
       return null;
     }

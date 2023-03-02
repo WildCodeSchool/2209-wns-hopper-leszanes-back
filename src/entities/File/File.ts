@@ -14,7 +14,7 @@ export class File {
 
   @Column({ default: "fileName" })
   @Field()
-  fileName: string;
+  filename: string;
 
   @Column()
   @Field()

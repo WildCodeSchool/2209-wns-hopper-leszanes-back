@@ -6,17 +6,21 @@ import { ApolloServer } from "apollo-server";
 import { buildSchema } from "type-graphql";
 import express from "express";
 import cors from "cors";
+import { graphql, GraphQLSchema, print } from "graphql";
 import { dataSource } from "./utils/dataSource";
 import { UserResolver } from "./resolvers/Users";
 import { FileResolver } from "./resolvers/Files";
 import { authChecker } from "./auth";
 import { shouldCompress } from "./utils/shouldCompress";
+import { getFile } from "./Queries/getFile";
+import { File } from "./entities/File/File";
 
 const GRAPHQL_PORT = 5000;
 const EXPRESS_PORT = 4000;
+let schema: GraphQLSchema;
 
 export const bootstrap = async () => {
-  const schema = await buildSchema({
+  schema = await buildSchema({
     resolvers: [UserResolver, FileResolver],
     authChecker,
   });
@@ -120,10 +124,6 @@ bootstrap()
 
       for (const file of filesUpload) {
         totalSize += file.size;
-        // const data = {
-        //   name: file.originalname,
-        //   fileName: file.filename
-        // }
         if (totalSize > storageRemaning) {
           return res.json({
             status: "error",
@@ -191,29 +191,34 @@ bootstrap()
       if (filename === "favicon.ico") return res.status(204).end();
 
       const file = `uploads/${filename}`;
-
-      // const fileData = async () => {
-      //   await graphql({
-      //     schema,
-      //     source: print(createUser),
-      //     variableValues: {
-      //       data: {
-      //         fileName: filename,
-      //       },
-      //     },
-      //   });
-      // };
-
-      return res.download(file, (err) => {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (!err) {
-          return;
-        }
-        // eslint-disable-next-line consistent-return
-        return res.json({
-          status: "error",
-          message: "File not found",
+      const setFileData = async () => {
+        const fileData = (await graphql({
+          schema,
+          source: print(getFile),
+          variableValues: {
+            filename,
+          },
+        })) as {
+          data: { getFile: File };
+          errors?: [{ message: string }];
+        };
+        const fileType = fileData.data.getFile.type.split("/");
+        const fileName = `${fileData.data.getFile.name}.${fileType[1]}`;
+        console.log(fileName);
+        return res.download(file, fileName, (err) => {
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          if (!err) {
+            return;
+          }
+          // eslint-disable-next-line consistent-return
+          return res.json({
+            status: "error",
+            message: "File not found",
+          });
         });
+      };
+      setFileData().catch((error) => {
+        console.log(error);
       });
     });
 

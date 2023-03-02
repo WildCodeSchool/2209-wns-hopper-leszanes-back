@@ -9,7 +9,7 @@ export class FileCreateInput {
 
   @Field()
   @Length(2, 50)
-  fileName: string;
+  filename: string;
 
   @Field()
   @Length(2, 250)
