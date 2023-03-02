@@ -4,5 +4,6 @@
   },
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "dotenv.enableAutocloaking": false
+  "dotenv.enableAutocloaking": false,
+  "files.eol": "\n"
 }

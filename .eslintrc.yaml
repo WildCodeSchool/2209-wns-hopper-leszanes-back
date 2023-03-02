@@ -6,7 +6,6 @@ extends:
     - airbnb-typescript-prettier
     - plugin:@typescript-eslint/strict
     - plugin:@typescript-eslint/recommended-requiring-type-checking
-    - plugin:react/jsx-runtime
 parser: '@typescript-eslint/parser'
 parserOptions:
     ecmaVersion: 2022
@@ -16,7 +15,6 @@ plugins:
     - '@typescript-eslint'
 root: true
 rules:
-
     import/no-default-export: error
     import/prefer-default-export: 'off'
     prefer-const: error
@@ -39,3 +37,7 @@ rules:
     import/no-extraneous-dependencies:
         - error
         - devDependencies: true
+    prettier/prettier:
+        - error
+        - endOfLine: auto
+    class-methods-use-this: 'off'
