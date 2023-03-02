@@ -7,6 +7,7 @@ specifiers:
   '@types/jsonwebtoken': ^9.0.1
   '@types/multer': ^1.4.7
   '@types/node': ^18.11.17
+  '@types/nodemailer': ^6.4.7
   '@typescript-eslint/eslint-plugin': ^5.47.0
   '@vitest/ui': ^0.26.1
   apollo-server: 3.*
@@ -22,6 +23,7 @@ specifiers:
   jsonwebtoken: ^9.0.0
   jszip: ^3.10.1
   multer: 1.4.5-lts.1
+  nodemailer: ^6.9.1
   pg: ^8.8.0
   ts-node-dev: ^2.0.0
   type-graphql: ^1.1.1
@@ -41,6 +43,7 @@ dependencies:
   jsonwebtoken: 9.0.0
   jszip: 3.10.1
   multer: 1.4.5-lts.1
+  nodemailer: 6.9.1
   pg: 8.8.0
   type-graphql: 1.1.1_yxlhq5elwzdhphazhcbwh6wmlq
   typeorm: 0.3.11_pg@8.8.0
@@ -53,6 +56,7 @@ devDependencies:
   '@types/jsonwebtoken': 9.0.1
   '@types/multer': 1.4.7
   '@types/node': 18.11.17
+  '@types/nodemailer': 6.4.7
   '@typescript-eslint/eslint-plugin': 5.47.0_ncmi6noazr3nzas7jxykisekym
   '@vitest/ui': 0.26.1
   eslint: 8.30.0
@@ -764,6 +768,12 @@ packages:
 
   /@types/node/18.11.17:
     resolution: {integrity: sha512-HJSUJmni4BeDHhfzn6nF0sVmd1SMezP7/4F0Lq+aXzmp2xm9O7WXrUtHW/CHlYVtZUbByEvWidHqRtcJXGF2Ng==}
+
+  /@types/nodemailer/6.4.7:
+    resolution: {integrity: sha512-f5qCBGAn/f0qtRcd4SEn88c8Fp3Swct1731X4ryPKqS61/A3LmmzN8zaEz7hneJvpjFbUUgY7lru/B/7ODTazg==}
+    dependencies:
+      '@types/node': 18.11.17
+    dev: true
 
   /@types/qs/6.9.7:
     resolution: {integrity: sha512-FGa1F62FT09qcrueBA6qYTrJPVDzah9a+493+o2PCXsesWHIn27G98TsSMs3WPNbZIEj4+VJf6saSFpvD+3Zsw==}
@@ -2985,6 +2995,11 @@ packages:
         optional: true
     dependencies:
       whatwg-url: 5.0.0
+    dev: false
+
+  /nodemailer/6.9.1:
+    resolution: {integrity: sha512-qHw7dOiU5UKNnQpXktdgQ1d3OFgRAekuvbJLcdG5dnEo/GtcTHRYM7+UfJARdOFU9WUQO8OiIamgWPmiSFHYAA==}
+    engines: {node: '>=6.0.0'}
     dev: false
 
   /nopt/5.0.0:
