@@ -26,17 +26,17 @@ jobs:
                   password: ${{ secrets.DOCKERHUB_TOKEN }}
             - name: Build and push
               uses: docker/build-push-action@v4
+              env: 
+                DB_HOST: ${{ secrets.DB_HOST }}
+                DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+                DB_USER: ${{ secrets.DB_USER }}
+                DB_NAME: ${{ secrets.DB_NAME }}
+                JWT_SECRET: ${{ secrets.JWT_SECRET }}
+                EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+                EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+                EMAIL_ADRESS: ${{ secrets.EMAIL_ADRESS }}
+                EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
               with:
-                  secrets: |
-                      DB_HOST
-                      DB_PASSWORD
-                      DB_USER
-                      DB_NAME
-                      JWT_SECRET
-                      EMAIL_HOST
-                      EMAIL_PORT
-                      EMAIL_ADRESS
-                      EMAIL_PASSWORD
                   push: true
                   context: '{{defaultContext}}'
                   tags: ${{ secrets.DOCKERHUB_USERNAME }}/2209-wns-hopper-leszanes-back:latest
