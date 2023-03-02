@@ -3,24 +3,24 @@
 import { beforeAll, describe, expect, it } from "@jest/globals";
 import { graphql, GraphQLSchema, print } from "graphql";
 import { buildSchema } from "type-graphql";
+import { dataSource } from "../../src/utils/dataSource";
 import { UserResolver } from "../../src/resolvers/Users";
 import { signIn } from "./Queries/SignIn";
 import { createUser } from "./Queries/CreateUser";
 import { getCurrentUser } from "./Queries/GetCurrentUser";
-import { testDataSource } from "../testDataSource";
 import { authChecker } from "../../src/auth";
 import { User } from "../../src/entities/User/User";
 
 let schema: GraphQLSchema;
 
 beforeAll(async () => {
-  await testDataSource.initialize();
+  await dataSource.initialize();
   try {
-    const entities = testDataSource.entityMetadatas;
+    const entities = dataSource.entityMetadatas;
     const tableNames = entities
       .map((entity) => `"${entity.tableName}"`)
       .join(", ");
-    await testDataSource.query(`TRUNCATE ${tableNames} CASCADE;`);
+    await dataSource.query(`TRUNCATE ${tableNames} CASCADE;`);
   } catch (error) {
     throw new Error(`ERROR: Cleaning test database: ${JSON.stringify(error)}`);
   }
@@ -49,7 +49,7 @@ describe("users", () => {
       expect(result.data?.createUser).toBeTruthy();
     });
     it("creates user in db", async () => {
-      const user = await testDataSource
+      const user = await dataSource
         .getRepository(User)
         .findOneBy({ email: "toto@test.com" });
       expect(user?.password !== "My@Password123").toBe(true);

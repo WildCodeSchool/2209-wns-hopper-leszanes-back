@@ -1,4 +1,4 @@
-name: vitest-and-docker-ci
+name: test-and-docker-ci
 
 on: push
 
