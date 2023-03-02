@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { beforeAll, describe, expect, it } from "@jest/globals";
 import { graphql, GraphQLSchema, print } from "graphql";
 import { buildSchema } from "type-graphql";
@@ -35,7 +33,7 @@ beforeAll(async () => {
 describe("users", () => {
   describe("user signup", () => {
     it("creates a new user", async () => {
-      const result = await graphql({
+      const result = (await graphql({
         schema,
         source: print(createUser),
         variableValues: {
@@ -45,13 +43,17 @@ describe("users", () => {
             password: "My@Password123",
           },
         },
-      });
+      })) as {
+        data: { createUser: { user: User; token: string } };
+        errors?: [{ message: string }];
+      };
 
-      expect(result.data?.createUser).toBeTruthy();
-      expect(result.data?.createUser.user).toBeTruthy();
-      expect(result.data?.createUser.token).toBeTruthy();
-      expect(result.data?.createUser.user.name).toBe("toto");
-      expect(result.data?.createUser.user.email).toBe("toto@test.com");
+      expect(result.data).toBeTruthy();
+      expect(result.data.createUser).toBeTruthy();
+      expect(result.data.createUser.user).toBeTruthy();
+      expect(result.data.createUser.token).toBeTruthy();
+      expect(result.data.createUser.user.name).toBe("toto");
+      expect(result.data.createUser.user.email).toBe("toto@test.com");
     });
     it("creates user in db", async () => {
       const user = await dataSource
@@ -81,33 +83,42 @@ describe("users", () => {
   describe("user signIn", () => {
     let userToken: string;
     it("returns a token on a valid mutation", async () => {
-      const result = await graphql({
+      const result = (await graphql({
         schema,
         source: print(signIn),
         variableValues: {
           email: "toto@test.com",
           password: "My@Password123",
         },
-      });
+      })) as {
+        data: { signIn: { user: User; token: string } };
+        errors?: [{ message: string }];
+      };
 
-      expect(result.data?.signIn).toBeTruthy();
-      expect(result.data?.signIn.user).toBeTruthy();
-      expect(result.data?.signIn.user.email).toBe("toto@test.com");
-      expect(typeof result.data?.signIn.token).toBe("string");
-      userToken = result.data?.signIn.token;
+      expect(result.data).toBeTruthy();
+      expect(result.data.signIn).toBeTruthy();
+      expect(result.data.signIn.user).toBeTruthy();
+      expect(result.data.signIn.user.email).toBe("toto@test.com");
+      expect(typeof result.data.signIn.token).toBeTruthy();
+      expect(typeof result.data.signIn.token).toBe("string");
+      userToken = result.data.signIn.token;
     });
 
     it("returns current logged user", async () => {
-      const result = await graphql({
+      const result = (await graphql({
         schema,
         source: print(getCurrentUser),
         contextValue: {
           token: userToken,
         },
-      });
+      })) as {
+        data: { getCurrentUser: User };
+        errors?: [{ message: string }];
+      };
 
-      expect(result.data?.getCurrentUser).toBeTruthy();
-      expect(result.data?.getCurrentUser.email).toBe("toto@test.com");
+      expect(result.data).toBeTruthy();
+      expect(result.data.getCurrentUser).toBeTruthy();
+      expect(result.data.getCurrentUser.email).toBe("toto@test.com");
     });
   });
 });
