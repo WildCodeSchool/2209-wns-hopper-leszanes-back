@@ -39,7 +39,6 @@ describe("users", () => {
         source: print(createUser),
         variableValues: {
           data: {
-            name: "toto",
             email: "toto@test.com",
             password: "My@Password123",
           },
