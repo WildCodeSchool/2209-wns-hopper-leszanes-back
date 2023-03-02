@@ -40,6 +40,7 @@ describe("users", () => {
         source: print(createUser),
         variableValues: {
           data: {
+            name: "toto",
             email: "toto@test.com",
             password: "My@Password123",
           },
@@ -47,6 +48,10 @@ describe("users", () => {
       });
 
       expect(result.data?.createUser).toBeTruthy();
+      expect(result.data?.createUser.user).toBeTruthy();
+      expect(result.data?.createUser.token).toBeTruthy();
+      expect(result.data?.createUser.user.name).toBe("toto");
+      expect(result.data?.createUser.user.email).toBe("toto@test.com");
     });
     it("creates user in db", async () => {
       const user = await dataSource
@@ -61,6 +66,7 @@ describe("users", () => {
         source: print(createUser),
         variableValues: {
           data: {
+            name: "toto",
             email: "toto@test.com",
             password: "My@Password123",
           },
