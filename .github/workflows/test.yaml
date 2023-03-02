@@ -27,6 +27,16 @@ jobs:
             - name: Build and push
               uses: docker/build-push-action@v4
               with:
+                  secrets: |
+                      DB_HOST
+                      DB_PASSWORD
+                      DB_USER
+                      DB_NAME
+                      JWT_SECRET
+                      EMAIL_HOST
+                      EMAIL_PORT
+                      EMAIL_ADRESS
+                      EMAIL_PASSWORD
                   push: true
                   context: '{{defaultContext}}'
                   tags: ${{ secrets.DOCKERHUB_USERNAME }}/2209-wns-hopper-leszanes-back:latest
