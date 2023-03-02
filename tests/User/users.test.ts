@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { beforeAll, describe, expect, it } from "@jest/globals";
 import { graphql, GraphQLSchema, print } from "graphql";
 import { buildSchema } from "type-graphql";
