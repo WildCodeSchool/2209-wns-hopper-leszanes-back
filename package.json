@@ -11,7 +11,7 @@
     "test:docker": "TEST_COMMAND=test:watch COMPOSE_PROJECT_NAME=ztransfer_test docker-compose -f docker-compose.test.yaml up --build",
     "format": "prettier --write src/**/*.{js,jsx,ts,tsx}",
     "lint": "eslint --fix src/**/*.{js,jsx,ts,tsx}",
-    "clean": "format && lint",
+    "clean": "pnpm format && pnpm lint",
     "start": "ts-node-dev --poll src/index.ts",
     "coverage": "jest --coverage"
   },

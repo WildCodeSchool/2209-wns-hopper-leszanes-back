@@ -12,7 +12,7 @@ services:
             - ./data/postgres:/data/postgres
         restart: unless-stopped
     api:
-        build: 
+        build:
             context: .
             dockerfile: Dockerfile.dev
         container_name: ztransfer_api

@@ -10,6 +10,5 @@ COPY tests ./
 COPY jest.config.js ./
 # COPY uploads uploads
 
-RUN --mount=type=secret,id=env,target=/api/.env
 RUN npm install -g pnpm
 RUN pnpm install
