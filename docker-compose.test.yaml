@@ -20,7 +20,7 @@ services:
             - db
         depends_on:
             - db
-        command: pnpm test ./tests ${JEST_OPTIONS}
+        command: pnpm ${TEST_COMMAND} ./tests
 
         volumes:
             - ./src:/api/src
