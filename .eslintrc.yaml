@@ -41,3 +41,6 @@ rules:
         - error
         - endOfLine: auto
     class-methods-use-this: 'off'
+    no-console:
+        - warn
+        - allow: ['warn', 'error']

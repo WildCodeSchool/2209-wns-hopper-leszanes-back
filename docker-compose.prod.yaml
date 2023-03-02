@@ -1,0 +1,10 @@
+services:
+    api:
+        container_name: ztransfer_api
+        image: ztransfert/2209-wns-hopper-leszanes-back:latest
+        ports:
+            - '5000:5000'
+            - '4000:4000'
+            - '5432:5432'
+            - '8080:8080'
+        restart: unless-stopped

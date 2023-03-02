@@ -7,7 +7,7 @@ services:
             - '54320:5432'
         restart: unless-stopped
     api:
-        build: 
+        build:
             context: .
             dockerfile: Dockerfile.test
         container_name: ztransfer_api_test

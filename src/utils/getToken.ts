@@ -12,7 +12,7 @@ export const getToken = (user: User) => {
       process.env.JWT_SECRET
     );
     return token;
-  } catch (error: any) {
-    throw new Error(error);
+  } catch (error: unknown) {
+    throw new Error(JSON.stringify(error));
   }
 };
