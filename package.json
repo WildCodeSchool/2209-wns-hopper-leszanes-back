@@ -6,7 +6,8 @@
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:ci": "TEST_COMMAND=test COMPOSE_PROJECT_NAME=ztransfer_test docker-compose -f docker-compose.test.yaml up --build --abort-on-container-exit --exit-code-from api",
+    "test:ci-command": "jest --detectOpenHandles --forceExit",
+    "test:ci": "TEST_COMMAND=test:ci-command COMPOSE_PROJECT_NAME=ztransfer_test docker-compose -f docker-compose.test.yaml up --build --abort-on-container-exit --exit-code-from api",
     "test:docker": "TEST_COMMAND=test:watch COMPOSE_PROJECT_NAME=ztransfer_test docker-compose -f docker-compose.test.yaml up --build",
     "format": "prettier --write src/**/*.{js,jsx,ts,tsx}",
     "lint": "eslint --fix src/**/*.{js,jsx,ts,tsx}",
