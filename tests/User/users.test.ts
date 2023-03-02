@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from "@jest/globals";
 import { graphql, GraphQLSchema, print } from "graphql";
 import { buildSchema } from "type-graphql";
+import { UserWithTokenResponse } from "../../src/entities/User/UserWithTokenResponse";
 import { dataSource } from "../../src/utils/dataSource";
 import { UserResolver } from "../../src/resolvers/Users";
 import { signIn } from "./Queries/SignIn";
@@ -44,7 +45,7 @@ describe("users", () => {
           },
         },
       })) as {
-        data: { createUser: { user: User; token: string } };
+        data: { createUser: UserWithTokenResponse };
         errors?: [{ message: string }];
       };
 
@@ -91,7 +92,7 @@ describe("users", () => {
           password: "My@Password123",
         },
       })) as {
-        data: { signIn: { user: User; token: string } };
+        data: { signIn: UserWithTokenResponse };
         errors?: [{ message: string }];
       };
 
