@@ -54,7 +54,7 @@ describe("users", () => {
       };
 
       expect(result.data).toBeTruthy();
-      expect(result.data.createUser).toBeFalsy();
+      expect(result.data.createUser).toBeTruthy();
       expect(result.data.createUser.user).toBeTruthy();
       expect(result.data.createUser.token).toBeTruthy();
       expect(result.data.createUser.user.name).toBe("toto");
