@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from "@jest/globals";
+import { afterAll, beforeAll, describe, expect, it } from "@jest/globals";
 import { graphql, GraphQLSchema, print } from "graphql";
 import { buildSchema } from "type-graphql";
 import { UserWithTokenResponse } from "../../src/entities/User/UserWithTokenResponse";
@@ -31,6 +31,10 @@ beforeAll(async () => {
   });
 });
 
+afterAll(async () => {
+  await dataSource.destroy();
+});
+
 describe("users", () => {
   describe("user signup", () => {
     it("creates a new user", async () => {
@@ -39,6 +43,7 @@ describe("users", () => {
         source: print(createUser),
         variableValues: {
           data: {
+            name: "toto",
             email: "toto@test.com",
             password: "My@Password123",
           },
