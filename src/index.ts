@@ -148,6 +148,8 @@ bootstrap()
       });
     });
 
+    // Télécharger un fichier via lien
+
     app.get("/:filename", (req, res) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const { filename } = req.params;
@@ -162,6 +164,18 @@ bootstrap()
       if (filename === "favicon.ico") return res.status(204).end();
 
       const file = `uploads/${filename}`;
+
+      // const fileData = async () => {
+      //   await graphql({
+      //     schema,
+      //     source: print(createUser),
+      //     variableValues: {
+      //       data: {
+      //         fileName: filename,
+      //       },
+      //     },
+      //   });
+      // };
 
       return res.download(file, (err) => {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
