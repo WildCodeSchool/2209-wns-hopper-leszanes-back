@@ -15,7 +15,7 @@ services:
         build:
             context: .
             dockerfile: Dockerfile.dev
-        container_name: ztransfer_api
+        container_name: ztransfer_api_dev
         restart: unless-stopped
         ports:
             - '5000:5000'
