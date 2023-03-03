@@ -1,10 +1,29 @@
 services:
+    db:
+        image: postgres
+        container_name: ztransfer_db
+        environment:
+            POSTGRES_PASSWORD: '${DB_PASSWORD}'
+            POSTGRES_USER: '${DB_USER}'
+            POSTGRES_DB: '${DB_NAME}'
+        ports:
+            - '5432:5432'
+        volumes:
+            - ./data/prod/postgres:/data/postgres
+        restart: unless-stopped
     api:
-        container_name: ztransfer_api
         image: ztransfert/2209-wns-hopper-leszanes-back:latest
+        container_name: ztransfer_api
+        env_file:
+            - .env
+        restart: unless-stopped
         ports:
             - '5000:5000'
             - '4000:4000'
-            - '5432:5432'
-            - '8080:8080'
-        restart: unless-stopped
+        links:
+            - db
+        depends_on:
+            - db
+        command: pnpm start
+        volumes:
+            - ./data/prod/uploads:/api/uploads

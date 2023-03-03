@@ -21,8 +21,7 @@ services:
         depends_on:
             - db
         command: pnpm ${TEST_COMMAND} ./tests
-
         volumes:
             - ./src:/api/src
-            - ./data/uploads:/api/uploads
+            - ./data/test/uploads:/api/uploads
             - ./tests:/api/tests
