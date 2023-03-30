@@ -26,13 +26,16 @@ jobs:
                   password: ${{ secrets.DOCKERHUB_TOKEN }}
             - name: Extract branch name
               shell: bash
-              # run: echo "branch=$(echo ${GITHUB_REF#refs/heads/})" >>$GITHUB_OUTPUT
-              run: github.ref == 'refs/heads/main' ? echo "latest" : echo "branch=$(echo ${GITHUB_REF#refs/heads/})" >>$GITHUB_OUTPUT
-              id: extract_branch   
+              run: echo "branch=$(echo ${GITHUB_REF#refs/heads/})" >>$GITHUB_OUTPUT
+              id: extract_branch
+            - name: Set docker image tag name
+              shell: bash
+              run: echo "tag=$(if [ ${{ steps.extract_branch.outputs.branch }} == 'main' ]; then echo 'latest'; else echo ${{ steps.extract_branch.outputs.branch }}; fi)" >>$GITHUB_OUTPUT
+              id: set_tag
             - name: Build and push
               uses: docker/build-push-action@v4
               with:
                   push: true
                   context: '{{defaultContext}}'
-                  tags: ${{ secrets.DOCKERHUB_USERNAME }}/2209-wns-hopper-leszanes-back:${{ steps.extract_branch.outputs.branch }}
+                  tags: ${{ secrets.DOCKERHUB_USERNAME }}/2209-wns-hopper-leszanes-back:${{ steps.set_tag.outputs.tag }}
             
