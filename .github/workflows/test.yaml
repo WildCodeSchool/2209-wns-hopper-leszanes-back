@@ -9,7 +9,7 @@ jobs:
             - name: Check out code
               uses: actions/checkout@v3
             - name: Install pnpm and run tests
-              run: npm add -g pnpm && pnpm install && pnpm test:ci
+              run: npm add -g pnpm && pnpm install --no-frozen-lockfile && pnpm test:ci
     docker:
         needs: test-back
         if: github.ref == 'refs/heads/main'
