@@ -32,7 +32,7 @@ export class UserResolver {
   async getUser(@Arg("id", () => ID) id: number): Promise<User | null> {
     const user = await userRepository.findOne({
       where: { id },
-      relations: [],
+      relations: ["contacts"],
     });
 
     if (!user) {
@@ -149,6 +149,104 @@ export class UserResolver {
       return null;
     } catch (err) {
       return null;
+    }
+  }
+
+  // attach contact
+  @Mutation(() => Boolean)
+  async attachContact(
+    @Arg("userId", () => ID) userId: number,
+    @Arg("contactId", () => ID) contactId: number
+  ): Promise<boolean> {
+    try {
+      if (userId === contactId) {
+        return false;
+      }
+
+      const user = await userRepository.findOne({
+        where: { id: userId },
+        relations: ["contacts"],
+      });
+
+      if (!user) {
+        return false;
+      }
+
+      if (
+        user.contacts.find(
+          (contact) => Number(contact.id) === Number(contactId)
+        )
+      ) {
+        return false;
+      }
+
+      const contact = await userRepository.findOne({
+        where: { id: contactId },
+      });
+
+      if (!contact) {
+        return false;
+      }
+
+      const userUpdated = {
+        ...user,
+        contacts: [...user.contacts, contact],
+      };
+
+      await userRepository.save(userUpdated);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  // detach contact
+  @Mutation(() => Boolean)
+  async detachContact(
+    @Arg("userId", () => ID) userId: number,
+    @Arg("contactId", () => ID) contactId: number
+  ): Promise<boolean> {
+    try {
+      if (userId === contactId) {
+        return false;
+      }
+
+      const user = await userRepository.findOne({
+        where: { id: userId },
+        relations: ["contacts"],
+      });
+
+      if (!user) {
+        return false;
+      }
+
+      if (
+        !user.contacts.find(
+          (contact) => Number(contact.id) === Number(contactId)
+        )
+      ) {
+        return false;
+      }
+
+      const contact = await userRepository.findOne({
+        where: { id: contactId },
+      });
+
+      if (!contact) {
+        return false;
+      }
+
+      const userUpdated = {
+        ...user,
+        contacts: user.contacts.filter(
+          (c) => Number(c.id) !== Number(contactId)
+        ),
+      };
+
+      await userRepository.save(userUpdated);
+      return true;
+    } catch (error) {
+      return false;
     }
   }
 }
