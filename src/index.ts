@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import multer from "multer";
 import compression from "compression";
 /* eslint-disable no-console */

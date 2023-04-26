@@ -65,16 +65,12 @@ export class UserResolver {
 
       const token = getToken(user);
 
-      if (!token) {
-        return null;
-      }
-
       return {
         user,
         token,
       };
-    } catch (error) {
-      return null;
+    } catch (error: any) {
+      throw new Error(error as string);
     }
   }
 

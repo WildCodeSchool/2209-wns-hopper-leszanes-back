@@ -1,0 +1,27 @@
+services:
+    db:
+        image: postgres
+        container_name: ztransfer_db_test
+        env_file: .env.test
+        ports:
+            - '54320:5432'
+        restart: unless-stopped
+    api:
+        build:
+            context: .
+            dockerfile: Dockerfile.test
+        container_name: ztransfer_api_test
+        env_file: .env.test
+        restart: unless-stopped
+        ports:
+            - '50000:5000'
+            - '40000:4000'
+        links:
+            - db
+        depends_on:
+            - db
+        command: pnpm ${TEST_COMMAND} ./tests
+        volumes:
+            - ./src:/api/src
+            - ./data/test/uploads:/api/uploads
+            - ./tests:/api/tests

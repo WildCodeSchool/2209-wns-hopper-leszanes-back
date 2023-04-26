@@ -1,10 +1,10 @@
 {
   "include": ["src/**/*"],
   "compilerOptions": {
-    "target": "es2018",
+    "target": "ESNext",
     "module": "commonjs",
     "moduleResolution": "node",
-    "lib": ["es2018", "esnext.asynciterable"],
+    "lib": ["ESNext", "esnext.asynciterable"],
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "strictNullChecks": true,
