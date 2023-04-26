@@ -15,12 +15,13 @@ import { userRepository } from "../repositories/userRepository";
 import { UserWithTokenResponse } from "../entities/User/UserWithTokenResponse";
 import { getToken } from "../utils/getToken";
 import { AuthCheckerType } from "../auth";
+import { CurrentUserUpdateInput } from "../entities/User/CurrentUserUpdateInput";
 
 @Resolver()
 export class UserResolver {
   // get all users
   // only connected user may read that
-  @Authorized()
+  @Authorized("admin")
   @Query(() => [User])
   async getUsers(): Promise<User[]> {
     const users = await userRepository.find();
@@ -28,6 +29,7 @@ export class UserResolver {
   }
 
   // get by id
+  @Authorized("admin")
   @Query(() => User, { nullable: true })
   async getUser(@Arg("id", () => ID) id: number): Promise<User | null> {
     const user = await userRepository.findOne({
@@ -55,8 +57,8 @@ export class UserResolver {
       const newUser = {
         ...data,
         storage: 0,
-        created_at: new Date(),
-        updated_at: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       const hashedPassword = await hash(newUser.password);
@@ -69,12 +71,32 @@ export class UserResolver {
         user,
         token,
       };
-    } catch (error: any) {
-      throw new Error(error as string);
+    } catch (error) {
+      throw new Error(JSON.stringify(error));
     }
   }
 
   // update
+  @Authorized()
+  @Mutation(() => User, { nullable: true })
+  async updateCurrentUser(
+    @Ctx() context: AuthCheckerType,
+    @Arg("data") data: CurrentUserUpdateInput
+  ): Promise<User | null> {
+    const user = context.user;
+
+    const userUpdated = {
+      ...user,
+      ...data,
+      updatedAt: new Date(),
+    };
+
+    const result = await userRepository.save(userUpdated);
+    return result;
+  }
+
+  // update
+  @Authorized("admin")
   @Mutation(() => User, { nullable: true })
   async updateUser(@Arg("data") data: UserUpdateInput): Promise<User | null> {
     const user = await userRepository.findOne({
@@ -88,7 +110,7 @@ export class UserResolver {
     const userUpdated = {
       ...user,
       ...data,
-      updated_at: new Date(),
+      updatedAt: new Date(),
     };
 
     const result = await userRepository.save(userUpdated);
@@ -96,6 +118,7 @@ export class UserResolver {
   }
 
   // delete
+  @Authorized("admin")
   @Mutation(() => Boolean)
   async deleteUser(@Arg("id", () => ID) id: number): Promise<boolean> {
     const user = await userRepository.findOne({

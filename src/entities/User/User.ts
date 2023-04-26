@@ -1,3 +1,4 @@
+import { Transfer } from "./../Transfer/Transfer";
 import { ObjectType, Field, ID } from "type-graphql";
 import {
   Entity,
@@ -5,7 +6,10 @@ import {
   PrimaryGeneratedColumn,
   ManyToMany,
   JoinTable,
+  OneToOne,
+  JoinColumn,
 } from "typeorm";
+import { Subscription } from "../Subscription/Subscription";
 
 @Entity()
 @ObjectType()
@@ -25,6 +29,18 @@ export class User {
   @Column()
   password: string;
 
+  @Column({ default: false })
+  @Field({ defaultValue: false })
+  isAdmin: boolean;
+
+  @Column()
+  @Field()
+  createdAt: Date;
+
+  @Column()
+  @Field()
+  updatedAt: Date;
+
   @ManyToMany(() => User, (user) => user.contacts)
   parent: User[];
 
@@ -33,11 +49,12 @@ export class User {
   @JoinTable()
   contacts: User[];
 
-  @Column()
-  @Field()
-  created_at: Date;
+  @Field(() => [Transfer])
+  @ManyToMany(() => Transfer, (tr) => tr.users)
+  transfers: Transfer[];
 
-  @Column()
-  @Field()
-  updated_at: Date;
+  @Field(() => Subscription)
+  @OneToOne(() => Subscription)
+  @JoinColumn()
+  subscription: Subscription;
 }

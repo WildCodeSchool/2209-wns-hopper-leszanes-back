@@ -11,13 +11,22 @@ import { UserResolver } from "./resolvers/Users";
 import { FileResolver } from "./resolvers/Files";
 import { authChecker } from "./auth";
 import { shouldCompress } from "./utils/shouldCompress";
+import { TransferResolver } from "./resolvers/Transfers";
+import { SubscriptionResolver } from "./resolvers/Subscriptions";
+import { SubscriptionPlanResolver } from "./resolvers/SubscriptionPlan";
 
 const GRAPHQL_PORT = 5000;
 const EXPRESS_PORT = 4000;
 
 export const bootstrap = async () => {
   const schema = await buildSchema({
-    resolvers: [UserResolver, FileResolver],
+    resolvers: [
+      UserResolver,
+      FileResolver,
+      TransferResolver,
+      SubscriptionResolver,
+      SubscriptionPlanResolver,
+    ],
     authChecker,
   });
 
