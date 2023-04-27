@@ -1,9 +1,9 @@
-import { InputType, Field } from "type-graphql";
-import { Length } from "class-validator";
+import { InputType, Field, ID } from "type-graphql";
+import { Length, Max } from "class-validator";
 
 @InputType()
 export class FileUpdateInput {
-  @Field()
+  @Field(() => ID)
   id: number;
 
   @Field()
@@ -11,12 +11,10 @@ export class FileUpdateInput {
   name: string;
 
   @Field()
-  @Length(2, 250)
-  description: string;
+  @Max(500_000_000)
+  size: number;
 
   @Field()
+  @Length(2, 20)
   type: string;
-
-  @Field()
-  is_private: boolean;
 }

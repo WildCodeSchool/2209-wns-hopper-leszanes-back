@@ -1,5 +1,6 @@
 import { ObjectType, Field, ID } from "type-graphql";
-import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from "typeorm";
+import { Transfer } from "../Transfer/Transfer";
 
 @Entity()
 @ObjectType()
@@ -12,9 +13,13 @@ export class File {
   @Field()
   name: string;
 
+  @Column({ default: "fileName" })
+  @Field()
+  filename: string;
+
   @Column()
   @Field()
-  description: string;
+  size: number;
 
   @Column()
   @Field()
@@ -22,13 +27,13 @@ export class File {
 
   @Column()
   @Field()
-  is_private: boolean;
+  createdAt: Date;
 
   @Column()
   @Field()
-  created_at: Date;
+  updatedAt: Date;
 
-  @Column()
-  @Field()
-  updated_at: Date;
+  @Field(() => Transfer, { nullable: false })
+  @ManyToOne(() => Transfer, (transfer) => transfer.files, { nullable: false })
+  transfer: Transfer;
 }

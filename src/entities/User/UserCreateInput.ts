@@ -17,7 +17,4 @@ export class UserCreateInput {
   @Length(12, 60)
   @IsStrongPassword()
   password: string;
-
-  // @Field()
-  // storage: number;
 }
