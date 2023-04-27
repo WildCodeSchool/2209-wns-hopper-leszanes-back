@@ -20,7 +20,6 @@ import { getFile } from "./Queries/getFile";
 
 const GRAPHQL_PORT = 5000;
 const EXPRESS_PORT = 4000;
-let schema: GraphQLSchema;
 
 export const bootstrap = async () => {
   const schema = await buildSchema({
