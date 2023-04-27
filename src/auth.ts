@@ -8,12 +8,13 @@ export type AuthCheckerType = {
   user: User | null;
 };
 
-export const authChecker: AuthChecker<AuthCheckerType> = async ({
-  context,
-}) => {
-  // here we can read the user from context
-  // and check his permission in the db against the `roles` argument
-  // that comes from the `@Authorized` decorator, eg. ["ADMIN", "MODERATOR"]
+export const authChecker: AuthChecker<AuthCheckerType> = async (
+  { context },
+  roles
+) => {
+  if (Array.isArray(roles) && roles.length !== 1) {
+    throw new Error("roles must be an array with one role or a string");
+  }
 
   const { token } = context;
   if (!token) {
@@ -29,7 +30,7 @@ export const authChecker: AuthChecker<AuthCheckerType> = async ({
     const payload = jwtVerify(token, process.env.JWT_SECRET);
     if (typeof payload !== "string" && "id" in payload) {
       const userFound = await userRepository.findOne({
-        where: { id: payload.id as number },
+        where: { id: Number(payload.id) },
         relations: [],
       });
 
@@ -38,6 +39,15 @@ export const authChecker: AuthChecker<AuthCheckerType> = async ({
       }
 
       context.user = userFound;
+
+      if (roles[0] === "admin") {
+        if (userFound.isAdmin) {
+          return true;
+        }
+
+        return false;
+      }
+
       return true;
     }
   } catch (error) {

@@ -5,7 +5,11 @@ import {
   PrimaryGeneratedColumn,
   ManyToMany,
   JoinTable,
+  OneToOne,
+  JoinColumn,
 } from "typeorm";
+import { Transfer } from "../Transfer/Transfer";
+import { ZeTransferSubscription } from "../ZeTransferSubscription/ZeTransferSubscription";
 
 @Entity()
 @ObjectType()
@@ -25,6 +29,22 @@ export class User {
   @Column()
   password: string;
 
+  @Column({ default: false })
+  @Field({ defaultValue: false })
+  isAdmin: boolean;
+
+  @Column()
+  @Field()
+  createdAt: Date;
+
+  @Column({ default: 0 })
+  @Field()
+  remaining_storage: number;
+
+  @Column()
+  @Field()
+  updatedAt: Date;
+
   @ManyToMany(() => User, (user) => user.contacts)
   parent: User[];
 
@@ -33,11 +53,12 @@ export class User {
   @JoinTable()
   contacts: User[];
 
-  @Column()
-  @Field()
-  created_at: Date;
+  @Field(() => [Transfer])
+  @ManyToMany(() => Transfer, (tr) => tr.users)
+  transfers: Transfer[];
 
-  @Column()
-  @Field()
-  updated_at: Date;
+  @Field(() => ZeTransferSubscription)
+  @OneToOne(() => ZeTransferSubscription)
+  @JoinColumn()
+  zeTransferSubscription: ZeTransferSubscription;
 }

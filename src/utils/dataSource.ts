@@ -3,6 +3,9 @@ import { DataSource } from "typeorm";
 import * as dotenv from "dotenv";
 import { User } from "../entities/User/User";
 import { File } from "../entities/File/File";
+import { Transfer } from "../entities/Transfer/Transfer";
+import { ZeTransferSubscription } from "../entities/ZeTransferSubscription/ZeTransferSubscription";
+import { ZeTransferSubscriptionPlan } from "../entities/ZeTransferSubscriptionPlan/ZeTransferSubscriptionPlan";
 
 dotenv.config();
 
@@ -26,5 +29,11 @@ export const dataSource = new DataSource({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   synchronize: true,
-  entities: [User, File],
+  entities: [
+    User,
+    File,
+    Transfer,
+    ZeTransferSubscription,
+    ZeTransferSubscriptionPlan,
+  ],
 });
