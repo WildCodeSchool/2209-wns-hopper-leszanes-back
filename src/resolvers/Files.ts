@@ -27,9 +27,9 @@ export class FileResolver {
   // get by id
   @Authorized("admin")
   @Query(() => File, { nullable: true })
-  async getFile(@Arg("filename") filename: string): Promise<File | null> {
+  async getFile(@Arg("name") name: string): Promise<File | null> {
     const file = await fileRepository.findOne({
-      where: { filename },
+      where: { name },
     });
     if (!file) {
       return null;
