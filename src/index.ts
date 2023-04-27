@@ -115,7 +115,6 @@ bootstrap()
       const filesUpload = req.files;
       const storageRemaning = 10000000;
       let totalSize = 0;
-      // const zip = new JSZip();
 
       if (filesUpload === undefined) {
         return res.json({
@@ -155,35 +154,50 @@ bootstrap()
     });
 
     // eslint-disable-next-line consistent-return
-    app.post("/files/download", (req, res) => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const { filename } = req.body;
+    // app.post("/files/download", (req, res) => {
+    //   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    //   const { filename } = req.body;
 
-      if (!filename) {
-        return res.json({
-          status: "error",
-          message: "No filename found in the request",
-        });
-      }
+    //   if (!filename) {
+    //   // Pour upload un seul fichier
+    //   if (filesUpload.length === 1) {
+    //     upload.single("files");
 
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      const file = `${__dirname}/uploads/${filename}`;
+    //     return res.json({
+    //       status: "Success",
+    //       message: "Une seul fichier à été uplaod",
+    //       data: {
+    //         nombre: filesUpload.length,
+    //         Nom: filesUpload[0].originalname,
+    //       },
+    //     });
+    //   }
 
-      res.download(file, (err) => {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (err) {
-          return res.json({
-            status: "error",
-            message: "File not found",
-          });
-        }
+    //   // upload plusieurs fichiers
+    //   if (filesUpload.length > 1) {
+    //     for (const file of filesUpload) {
+    //       totalSize += file.size;
+    //       filesInfo.push(file.filename);
+    //       filesInfo.push(file.originalname.split("."));
 
-        return res.json({
-          status: "success",
-          message: "File downloaded successfully",
-        });
-      });
-    });
+    //       if (totalSize > storageRemaning) {
+    //         return res.json({
+    //           status: "error",
+    //           message: "You don't have enough storage space",
+    //         });
+    //       }
+    //     }
+    //     upload.array("files");
+    //     return res.json({
+    //       status: "Success",
+    //       message: "Les fichiers ont été upload",
+    //       data: {
+    //         nombre: filesUpload.length,
+    //         Nom: filesInfo,
+    //       },
+    //     });
+    //   }
+    // });
 
     // Télécharger un fichier via lien
 
@@ -239,13 +253,3 @@ bootstrap()
     });
   })
   .catch((err) => console.error(err));
-
-// const MakeZip = async (file: Express.Multer.File) => {
-//   const zip = new JSZip();
-
-//   await zip.generateAsync().then((content) => {
-//     saveAs(content, "example.zip");
-//   });
-
-//   zip.file(file.originalname, file.buffer);
-// };
