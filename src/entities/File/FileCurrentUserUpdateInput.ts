@@ -1,8 +1,11 @@
+import { InputType, Field, ID } from "type-graphql";
 import { Length, Max } from "class-validator";
-import { Field, ID, InputType } from "type-graphql";
 
 @InputType()
-export class FileCreateInput {
+export class FileCurrentUserUpdateInput {
+  @Field(() => ID)
+  id: number;
+
   @Field()
   @Length(2, 50)
   name: string;
@@ -14,7 +17,4 @@ export class FileCreateInput {
   @Field()
   @Length(2, 20)
   type: string;
-
-  @Field(() => ID)
-  transferId: number;
 }

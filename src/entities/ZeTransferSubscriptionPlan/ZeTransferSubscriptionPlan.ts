@@ -3,7 +3,7 @@ import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 @ObjectType()
-export class SubscriptionPlan {
+export class ZeTransferSubscriptionPlan {
   @PrimaryGeneratedColumn()
   @Field(() => ID)
   id: number;

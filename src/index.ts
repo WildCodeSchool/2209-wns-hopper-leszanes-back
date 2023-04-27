@@ -12,8 +12,8 @@ import { FileResolver } from "./resolvers/Files";
 import { authChecker } from "./auth";
 import { shouldCompress } from "./utils/shouldCompress";
 import { TransferResolver } from "./resolvers/Transfers";
-import { SubscriptionResolver } from "./resolvers/Subscriptions";
-import { SubscriptionPlanResolver } from "./resolvers/SubscriptionPlan";
+import { ZeTransferSubscriptionsResolver } from "./resolvers/ZeTransferSubscriptions";
+import { ZeTransferSubscriptionPlansResolver } from "./resolvers/ZeTransferSubscriptionPlans";
 
 const GRAPHQL_PORT = 5000;
 const EXPRESS_PORT = 4000;
@@ -24,8 +24,8 @@ export const bootstrap = async () => {
       UserResolver,
       FileResolver,
       TransferResolver,
-      SubscriptionResolver,
-      SubscriptionPlanResolver,
+      ZeTransferSubscriptionsResolver,
+      ZeTransferSubscriptionPlansResolver,
     ],
     authChecker,
   });
@@ -127,6 +127,7 @@ bootstrap()
       });
     });
 
+    // eslint-disable-next-line consistent-return
     app.post("/files/download", (req, res) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const { filename } = req.body;

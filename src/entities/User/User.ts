@@ -1,4 +1,3 @@
-import { Transfer } from "./../Transfer/Transfer";
 import { ObjectType, Field, ID } from "type-graphql";
 import {
   Entity,
@@ -9,7 +8,8 @@ import {
   OneToOne,
   JoinColumn,
 } from "typeorm";
-import { Subscription } from "../Subscription/Subscription";
+import { Transfer } from "../Transfer/Transfer";
+import { ZeTransferSubscription } from "../ZeTransferSubscription/ZeTransferSubscription";
 
 @Entity()
 @ObjectType()
@@ -53,8 +53,8 @@ export class User {
   @ManyToMany(() => Transfer, (tr) => tr.users)
   transfers: Transfer[];
 
-  @Field(() => Subscription)
-  @OneToOne(() => Subscription)
+  @Field(() => ZeTransferSubscription)
+  @OneToOne(() => ZeTransferSubscription)
   @JoinColumn()
-  subscription: Subscription;
+  zeTransferSubscription: ZeTransferSubscription;
 }

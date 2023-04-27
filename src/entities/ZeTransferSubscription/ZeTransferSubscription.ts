@@ -6,11 +6,11 @@ import {
   OneToOne,
   JoinColumn,
 } from "typeorm";
-import { SubscriptionPlan } from "../SubscriptionPlan/SubscriptionPlan";
+import { ZeTransferSubscriptionPlan } from "../ZeTransferSubscriptionPlan/ZeTransferSubscriptionPlan";
 
 @Entity()
 @ObjectType()
-export class Subscription {
+export class ZeTransferSubscription {
   @PrimaryGeneratedColumn()
   @Field(() => ID)
   id: number;
@@ -21,14 +21,18 @@ export class Subscription {
 
   @Column()
   @Field()
+  isYearly: boolean;
+
+  @Column()
+  @Field()
   createdAt: Date;
 
   @Column()
   @Field()
   updatedAt: Date;
 
-  @Field(() => SubscriptionPlan, { nullable: false })
-  @OneToOne(() => SubscriptionPlan, { nullable: false })
+  @Field(() => ZeTransferSubscriptionPlan, { nullable: false })
+  @OneToOne(() => ZeTransferSubscriptionPlan, { nullable: false })
   @JoinColumn()
-  subscriptionPlan: SubscriptionPlan;
+  zeTransferSubscriptionPlan: ZeTransferSubscriptionPlan;
 }

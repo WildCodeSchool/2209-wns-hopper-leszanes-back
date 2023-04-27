@@ -56,7 +56,6 @@ export class UserResolver {
     try {
       const newUser = {
         ...data,
-        storage: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -83,7 +82,7 @@ export class UserResolver {
     @Ctx() context: AuthCheckerType,
     @Arg("data") data: CurrentUserUpdateInput
   ): Promise<User | null> {
-    const user = context.user;
+    const { user } = context;
 
     const userUpdated = {
       ...user,

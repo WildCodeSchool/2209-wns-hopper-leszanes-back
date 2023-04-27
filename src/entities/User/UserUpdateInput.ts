@@ -1,9 +1,9 @@
 import { IsEmail, Length } from "class-validator";
-import { Field, InputType } from "type-graphql";
+import { Field, ID, InputType } from "type-graphql";
 
 @InputType()
 export class UserUpdateInput {
-  @Field()
+  @Field(() => ID)
   id: number;
 
   @Field()
@@ -14,9 +14,6 @@ export class UserUpdateInput {
   @Length(7, 50)
   @IsEmail()
   email: string;
-
-  @Field()
-  storage: number;
 
   @Field()
   isAdmin: boolean;

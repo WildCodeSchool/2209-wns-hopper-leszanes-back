@@ -12,7 +12,7 @@ export const authChecker: AuthChecker<AuthCheckerType> = async (
   { context },
   roles
 ) => {
-  if (roles !== undefined && Array.isArray(roles) && roles.length !== 1) {
+  if (Array.isArray(roles) && roles.length !== 1) {
     throw new Error("roles must be an array with one role or a string");
   }
 
@@ -40,7 +40,7 @@ export const authChecker: AuthChecker<AuthCheckerType> = async (
 
       context.user = userFound;
 
-      if (roles && roles[0] === "admin") {
+      if (roles[0] === "admin") {
         if (userFound.isAdmin) {
           return true;
         }
