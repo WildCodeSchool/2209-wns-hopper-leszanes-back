@@ -25,10 +25,10 @@ export class TransferResolver {
   }
 
   // get all transfers
-  @Authorized("admin")
-  @Query(() => [Transfer])
+  @Authorized()
+  @Query(() => [Transfer], { nullable: true })
   async getCurrentUserTransfers(
-    @Ctx("context") context: AuthCheckerType
+    @Ctx() context: AuthCheckerType
   ): Promise<Transfer[] | null> {
     const { user } = context;
 
@@ -62,7 +62,7 @@ export class TransferResolver {
   @Authorized()
   @Mutation(() => Transfer, { nullable: true })
   async createTransfer(
-    @Ctx("context") context: AuthCheckerType,
+    @Ctx() context: AuthCheckerType,
     @Arg("data", () => TransferCreateInput)
     data: TransferCreateInput
   ): Promise<Transfer | null> {
@@ -115,7 +115,7 @@ export class TransferResolver {
   @Authorized()
   @Mutation(() => Transfer, { nullable: true })
   async updateCurrentUserTransfer(
-    @Ctx("context") context: AuthCheckerType,
+    @Ctx() context: AuthCheckerType,
     @Arg("data") data: TransferCurrentUserUpdateInput
   ): Promise<Transfer | null> {
     const { user } = context;
@@ -166,7 +166,7 @@ export class TransferResolver {
   @Authorized()
   @Mutation(() => Boolean)
   async deleteCurrentUserTransfer(
-    @Ctx("context") context: AuthCheckerType,
+    @Ctx() context: AuthCheckerType,
     @Arg("id", () => ID) id: number
   ): Promise<boolean> {
     const { user } = context;

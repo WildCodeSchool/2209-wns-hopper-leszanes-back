@@ -92,7 +92,7 @@ export class ZeTransferSubscriptionsResolver {
   @Authorized()
   @Mutation(() => ZeTransferSubscription, { nullable: true })
   async updateCurrentUserSub(
-    @Ctx("context") context: AuthCheckerType,
+    @Ctx() context: AuthCheckerType,
     @Arg("data") data: ZeTransferSubscriptionCurrentUserUpdateInput
   ): Promise<ZeTransferSubscription | null> {
     const { user } = context;

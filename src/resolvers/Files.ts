@@ -95,7 +95,7 @@ export class FileResolver {
   @Authorized()
   @Mutation(() => File, { nullable: true })
   async currentUserUpdateFile(
-    @Ctx("context") context: AuthCheckerType,
+    @Ctx() context: AuthCheckerType,
     @Arg("data") data: FileCurrentUserUpdateInput
   ): Promise<File | null> {
     const { user } = context;
@@ -146,7 +146,7 @@ export class FileResolver {
   @Authorized()
   @Mutation(() => Boolean)
   async deleteCurrentUserFile(
-    @Ctx("context") context: AuthCheckerType,
+    @Ctx() context: AuthCheckerType,
     @Arg("id", () => ID) id: number
   ): Promise<boolean> {
     const { user } = context;
