@@ -16,6 +16,7 @@ import { shouldCompress } from "./utils/shouldCompress";
 import { TransferResolver } from "./resolvers/Transfers";
 import { ZeTransferSubscriptionsResolver } from "./resolvers/ZeTransferSubscriptions";
 import { ZeTransferSubscriptionPlansResolver } from "./resolvers/ZeTransferSubscriptionPlans";
+import { getFile } from "./Queries/getFile";
 
 const GRAPHQL_PORT = 5000;
 const EXPRESS_PORT = 4000;
