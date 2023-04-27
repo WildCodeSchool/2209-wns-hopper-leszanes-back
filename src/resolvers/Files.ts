@@ -27,12 +27,10 @@ export class FileResolver {
   // get by id
   @Authorized("admin")
   @Query(() => File, { nullable: true })
-  async getFile(@Arg("id", () => ID) id: number): Promise<File | null> {
+  async getFile(@Arg("filename") filename: string): Promise<File | null> {
     const file = await fileRepository.findOne({
-      where: { id },
-      relations: [],
+      where: { filename },
     });
-
     if (!file) {
       return null;
     }

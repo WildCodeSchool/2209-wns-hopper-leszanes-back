@@ -13,6 +13,10 @@ export class File {
   @Field()
   name: string;
 
+  @Column({ default: "fileName" })
+  @Field()
+  filename: string;
+
   @Column()
   @Field()
   size: number;
