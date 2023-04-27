@@ -1,4 +1,4 @@
-import { ObjectType, Field, ID } from "type-graphql";
+import { ObjectType, Field, ID, Float } from "type-graphql";
 import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
@@ -12,8 +12,8 @@ export class ZeTransferSubscriptionPlan {
   @Field()
   name: string;
 
-  @Column()
-  @Field()
+  @Column({ type: "float" })
+  @Field(() => Float)
   price: number;
 
   @Column()
