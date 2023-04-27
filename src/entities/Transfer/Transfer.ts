@@ -44,12 +44,12 @@ export class Transfer {
   @JoinColumn()
   createdBy: User;
 
-  @Field(() => [User])
-  @ManyToMany(() => User, (user) => user.transfers)
+  @Field(() => [User], { nullable: true })
+  @ManyToMany(() => User, (user) => user.transfers, { nullable: true })
   @JoinTable()
   users: User;
 
-  @Field(() => [File])
-  @OneToMany(() => File, (file) => file.transfer)
+  @Field(() => [File], { nullable: true })
+  @OneToMany(() => File, (file) => file.transfer, { nullable: true })
   files: File[];
 }
