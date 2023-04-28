@@ -3,11 +3,11 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  OneToOne,
   ManyToMany,
   OneToMany,
   JoinTable,
   JoinColumn,
+  ManyToOne,
 } from "typeorm";
 import { User } from "../User/User";
 import { File } from "../File/File";
@@ -40,7 +40,7 @@ export class Transfer {
   updatedAt: Date;
 
   @Field(() => User, { nullable: false })
-  @OneToOne(() => User, { nullable: false })
+  @ManyToOne(() => User, { nullable: false })
   @JoinColumn()
   createdBy: User;
 
