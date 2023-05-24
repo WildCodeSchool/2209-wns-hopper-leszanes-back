@@ -32,7 +32,9 @@ export class ZeTransferSubscription {
   updatedAt: Date;
 
   @Field(() => ZeTransferSubscriptionPlan, { nullable: false })
-  @OneToOne(() => ZeTransferSubscriptionPlan, { nullable: false })
+  @OneToOne(() => ZeTransferSubscriptionPlan, {
+    nullable: false,
+  })
   @JoinColumn()
   zeTransferSubscriptionPlan: ZeTransferSubscriptionPlan;
 }

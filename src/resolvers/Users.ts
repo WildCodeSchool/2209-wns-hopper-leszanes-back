@@ -16,6 +16,7 @@ import { UserWithTokenResponse } from "../entities/User/UserWithTokenResponse";
 import { getToken } from "../utils/getToken";
 import { AuthCheckerType } from "../auth";
 import { CurrentUserUpdateInput } from "../entities/User/CurrentUserUpdateInput";
+import { zeTransferSubscriptionRepository } from "../repositories/zeTransferSubscriptionRepository";
 
 @Resolver()
 export class UserResolver {
@@ -83,15 +84,23 @@ export class UserResolver {
     @Arg("data") data: CurrentUserUpdateInput
   ): Promise<User | null> {
     const { user } = context;
+    const sub = await zeTransferSubscriptionRepository.findOne({
+      where: { id: data.zeTransferSubscriptionId },
+      relations: { zeTransferSubscriptionPlan: true },
+    });
+    if (user && sub) {
+      const userUpdated = {
+        ...user,
+        name: data.name,
+        email: data.email,
+        zeTransferSubscription: sub,
+        updatedAt: new Date(),
+      };
+      const result = await userRepository.save(userUpdated);
+      return result;
+    }
 
-    const userUpdated = {
-      ...user,
-      ...data,
-      updatedAt: new Date(),
-    };
-
-    const result = await userRepository.save(userUpdated);
-    return result;
+    return null;
   }
 
   // update
@@ -100,18 +109,32 @@ export class UserResolver {
   async updateUser(@Arg("data") data: UserUpdateInput): Promise<User | null> {
     const user = await userRepository.findOne({
       where: { id: data.id },
+      relations: { zeTransferSubscription: true },
     });
-
     if (!user) {
       return null;
     }
+    let sub;
+    if (data.zeTransferSubscriptionId) {
+      sub = await zeTransferSubscriptionRepository.findOne({
+        where: { id: data.zeTransferSubscriptionId },
+        relations: { zeTransferSubscriptionPlan: true },
+      });
+    } else {
+      sub = undefined;
+    }
 
+    if (sub === null) {
+      return null;
+    }
     const userUpdated = {
       ...user,
-      ...data,
+      name: data.name,
+      email: data.email,
+      isAdmin: data.isAdmin,
+      zeTransferSubscription: sub,
       updatedAt: new Date(),
     };
-
     const result = await userRepository.save(userUpdated);
     return result;
   }

@@ -61,14 +61,15 @@ export class ZeTransferSubscriptionPlansResolver {
     const plan = await zeTransferSubscriptionPlanRepository.findOne({
       where: { id: data.id },
     });
-
     if (!plan) {
       return null;
     }
 
     const planUpdated = {
       ...plan,
-      ...data,
+      price: data.price,
+      name: data.name,
+      storage: data.storage,
       updatedAt: new Date(),
     };
 
