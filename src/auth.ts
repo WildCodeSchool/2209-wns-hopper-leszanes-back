@@ -30,7 +30,7 @@ export const authChecker: AuthChecker<AuthCheckerType> = async (
         relations: [],
       });
 
-      if (!userFound) {
+      if (!userFound?.isActive) {
         return false;
       }
 

@@ -94,6 +94,7 @@ export class UserResolver {
         name: data.name,
         email: data.email,
         zeTransferSubscription: sub,
+        isActive: data.isActive,
         updatedAt: new Date(),
       };
       const result = await userRepository.save(userUpdated);
@@ -132,6 +133,7 @@ export class UserResolver {
       name: data.name,
       email: data.email,
       isAdmin: data.isAdmin,
+      isActive: data.isActive,
       zeTransferSubscription: sub,
       updatedAt: new Date(),
     };
@@ -171,7 +173,7 @@ export class UserResolver {
         where: { email },
       });
 
-      if (!user || !(await verify(user.password, password))) {
+      if (!user?.isActive || !(await verify(user.password, password))) {
         return null;
       }
 

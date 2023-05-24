@@ -33,6 +33,10 @@ export class User {
   @Field({ defaultValue: false })
   isAdmin: boolean;
 
+  @Column({ default: true })
+  @Field({ defaultValue: true })
+  isActive: boolean;
+
   @Column()
   @Field()
   createdAt: Date;
