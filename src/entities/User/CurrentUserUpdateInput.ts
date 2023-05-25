@@ -4,7 +4,7 @@ import { Field, InputType } from "type-graphql";
 @InputType()
 export class CurrentUserUpdateInput {
   @Field({ nullable: true })
-  @Length(2, 50) // don't forget Li
+  @Length(2, 50)
   name: string;
 
   @Field({ nullable: true })

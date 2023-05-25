@@ -19,15 +19,12 @@ export class ZeTransferSubscriptionsResolver {
   // get all subs
   @Authorized("admin")
   @Query(() => [ZeTransferSubscription])
-  async getSubscriptions(): Promise<ZeTransferSubscription[] | null> {
+  async getSubscriptions(): Promise<ZeTransferSubscription[]> {
     const subs = await zeTransferSubscriptionRepository.find({
       relations: {
         zeTransferSubscriptionPlan: true,
       },
     });
-    if (!subs) {
-      return null;
-    }
     return subs;
   }
 

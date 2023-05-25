@@ -290,4 +290,23 @@ export class UserResolver {
       return false;
     }
   }
+
+  // attach contact
+  @Authorized()
+  @Query(() => [User], { nullable: true })
+  async getCurrentUserContacts(
+    @Ctx() context: AuthCheckerType
+  ): Promise<User[] | null> {
+    const { user } = context;
+    if (!user) {
+      return null;
+    }
+
+    try {
+      await user.loadRelation("contacts");
+      return user.contacts;
+    } catch (error) {
+      return null;
+    }
+  }
 }

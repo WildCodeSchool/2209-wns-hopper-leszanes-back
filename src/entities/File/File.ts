@@ -1,10 +1,11 @@
 import { ObjectType, Field, ID } from "type-graphql";
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from "typeorm";
 import { Transfer } from "../Transfer/Transfer";
+import { BaseEntity } from "../../utils/loadRelation";
 
 @Entity()
 @ObjectType()
-export class File {
+export class File extends BaseEntity {
   @PrimaryGeneratedColumn()
   @Field(() => ID)
   id: number;

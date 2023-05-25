@@ -1,9 +1,10 @@
 import { ObjectType, Field, ID, Float } from "type-graphql";
 import { Entity, Column, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity } from "../../utils/loadRelation";
 
 @Entity()
 @ObjectType()
-export class ZeTransferSubscriptionPlan {
+export class ZeTransferSubscriptionPlan extends BaseEntity {
   @PrimaryGeneratedColumn()
   @Field(() => ID)
   id: number;

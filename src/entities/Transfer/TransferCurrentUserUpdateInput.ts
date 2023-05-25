@@ -1,10 +1,16 @@
-import { Field, InputType } from "type-graphql";
+import { Length } from "class-validator";
+import { Field, ID, InputType } from "type-graphql";
 
 @InputType()
 export class TransferCurrentUserUpdateInput {
-  @Field()
+  @Field(() => ID)
+  id: number;
+
+  @Field({ nullable: true })
+  @Length(2, 50)
   name: string;
 
-  @Field()
+  @Field({ nullable: true })
+  @Length(2, 255)
   description: string;
 }

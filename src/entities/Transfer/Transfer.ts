@@ -11,10 +11,11 @@ import {
 } from "typeorm";
 import { User } from "../User/User";
 import { File } from "../File/File";
+import { BaseEntity } from "../../utils/loadRelation";
 
 @Entity()
 @ObjectType()
-export class Transfer {
+export class Transfer extends BaseEntity {
   @PrimaryGeneratedColumn()
   @Field(() => ID)
   id: number;
@@ -47,7 +48,7 @@ export class Transfer {
   @Field(() => [User], { nullable: true })
   @ManyToMany(() => User, (user) => user.transfers, { nullable: true })
   @JoinTable()
-  users: User;
+  users: User[];
 
   @Field(() => [File], { nullable: true })
   @OneToMany(() => File, (file) => file.transfer, { nullable: true })

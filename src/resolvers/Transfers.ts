@@ -7,6 +7,7 @@ import {
   Ctx,
   Mutation,
 } from "type-graphql";
+import { In } from "typeorm";
 import { transferRepository } from "../repositories/transfertRepository";
 import { Transfer } from "../entities/Transfer/Transfer";
 import { AuthCheckerType } from "../auth";
@@ -19,7 +20,9 @@ export class TransferResolver {
   @Authorized("admin")
   @Query(() => [Transfer])
   async getTransfers(): Promise<Transfer[]> {
-    const transfers = await transferRepository.find();
+    const transfers = await transferRepository.find({
+      relations: ["createdBy"],
+    });
     return transfers;
   }
 
@@ -36,7 +39,11 @@ export class TransferResolver {
     }
 
     const myTransfers = await transferRepository.find({
-      where: { createdBy: user },
+      where: {
+        createdBy: {
+          id: user.id,
+        },
+      },
       relations: ["createdBy", "users", "files"],
     });
     const sharedTransfers = await transferRepository
@@ -58,7 +65,7 @@ export class TransferResolver {
   async getTransfer(@Arg("id", () => ID) id: number): Promise<Transfer | null> {
     const transfer = await transferRepository.findOne({
       where: { id },
-      relations: [],
+      relations: ["createdBy"],
     });
 
     if (!transfer) {
@@ -108,6 +115,7 @@ export class TransferResolver {
   ): Promise<Transfer | null> {
     const transfer = await transferRepository.findOne({
       where: { id: data.id },
+      relations: ["createdBy"],
     });
 
     if (!transfer) {
@@ -138,21 +146,30 @@ export class TransferResolver {
     }
 
     const transfer = await transferRepository.findOne({
-      where: { createdBy: user },
+      where: {
+        id: data.id,
+        createdBy: {
+          id: user.id,
+        },
+      },
+      relations: ["createdBy", "users", "files"],
     });
 
     if (!transfer) {
       return null;
     }
-
     const transferUpdated = {
       ...transfer,
       ...data,
       updatedAt: new Date(),
     };
 
-    const result = await transferRepository.save(transferUpdated);
-    return result;
+    try {
+      const result = await transferRepository.save(transferUpdated);
+      return result;
+    } catch (error) {
+      throw new Error(JSON.stringify(error));
+    }
   }
 
   // delete
@@ -175,6 +192,28 @@ export class TransferResolver {
     }
   }
 
+  // Bulk delete
+  @Authorized("admin")
+  @Mutation(() => Boolean)
+  async bulkDeleteTransfers(
+    @Arg("ids", () => [ID]) ids: number[]
+  ): Promise<boolean> {
+    const transfers = await transferRepository.find({
+      where: { id: In(ids) },
+    });
+
+    if (transfers.length === 0) {
+      return false;
+    }
+
+    try {
+      await transferRepository.delete(ids);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
   // delete current user
   @Authorized()
   @Mutation(() => Boolean)
@@ -187,17 +226,56 @@ export class TransferResolver {
       return false;
     }
     const transfer = await transferRepository.findOne({
-      where: { createdBy: user, id },
+      where: {
+        id,
+        createdBy: {
+          id: user.id,
+        },
+      },
     });
 
-    if (transfer) {
-      try {
-        await transferRepository.delete(id);
-        return true;
-      } catch (error) {
-        return false;
-      }
-    } else {
+    if (!transfer) {
+      return false;
+    }
+
+    try {
+      await transferRepository.delete(id);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  // Bulk delete current user transfers
+  @Authorized()
+  @Mutation(() => Boolean)
+  async bulkDeleteCurrentUserTransfers(
+    @Ctx() context: AuthCheckerType,
+    @Arg("ids", () => [ID]) ids: number[]
+  ): Promise<boolean> {
+    const { user } = context;
+
+    if (!user) {
+      return false;
+    }
+
+    const transfers = await transferRepository.find({
+      where: {
+        id: In(ids),
+        createdBy: {
+          id: user.id,
+        },
+      },
+    });
+
+    if (transfers.length === 0) {
+      return false;
+    }
+
+    try {
+      await transferRepository.delete(ids);
+      return true;
+    } catch (error) {
       return false;
     }
   }
