@@ -84,7 +84,7 @@ export class ZeTransferSubscriptionPlansResolver {
     const plan = await zeTransferSubscriptionPlanRepository.findOne({
       where: { id },
     });
-
+    console.log(plan);
     if (plan) {
       try {
         await zeTransferSubscriptionPlanRepository.delete(id);

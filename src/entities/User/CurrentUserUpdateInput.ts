@@ -1,4 +1,4 @@
-import { IsEmail, Length } from "class-validator";
+import { IsEmail, Length, IsBoolean } from "class-validator";
 import { Field, InputType } from "type-graphql";
 
 @InputType()
@@ -14,4 +14,8 @@ export class CurrentUserUpdateInput {
 
   @Field({ nullable: true })
   zeTransferSubscriptionId: number;
+
+  @Field({ nullable: true })
+  @IsBoolean()
+  isActive: boolean;
 }
