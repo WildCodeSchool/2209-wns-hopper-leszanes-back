@@ -105,7 +105,7 @@ export class ZeTransferSubscriptionsResolver {
   ): Promise<ZeTransferSubscription | null> {
     const { user } = context;
 
-    if (!user) {
+    if (!user?.zeTransferSubscription) {
       return null;
     }
 

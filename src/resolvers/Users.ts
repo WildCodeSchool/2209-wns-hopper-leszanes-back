@@ -84,24 +84,36 @@ export class UserResolver {
     @Arg("data") data: CurrentUserUpdateInput
   ): Promise<User | null> {
     const { user } = context;
-    const sub = await zeTransferSubscriptionRepository.findOne({
-      where: { id: data.zeTransferSubscriptionId },
-      relations: { zeTransferSubscriptionPlan: true },
-    });
-    if (user && sub) {
-      const userUpdated = {
-        ...user,
-        name: data.name,
-        email: data.email,
-        zeTransferSubscription: sub,
-        isActive: data.isActive,
-        updatedAt: new Date(),
-      };
-      const result = await userRepository.save(userUpdated);
-      return result;
+
+    if (!user) {
+      return null;
     }
 
-    return null;
+    let sub;
+    if (data.zeTransferSubscriptionId) {
+      sub = await zeTransferSubscriptionRepository.findOne({
+        where: { id: data.zeTransferSubscriptionId },
+        relations: { zeTransferSubscriptionPlan: true },
+      });
+    } else {
+      sub = undefined;
+    }
+
+    if (sub === null) {
+      return null;
+    }
+
+    const userUpdated = {
+      ...user,
+      name: data.name,
+      email: data.email,
+      isActive: data.isActive,
+      zeTransferSubscription: sub,
+      updatedAt: new Date(),
+    };
+
+    const result = await userRepository.save(userUpdated);
+    return result;
   }
 
   // update

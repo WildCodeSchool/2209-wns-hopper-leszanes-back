@@ -58,8 +58,8 @@ export class User extends BaseEntity {
   @ManyToMany(() => Transfer, (tr) => tr.users)
   transfers: Transfer[];
 
-  @Field(() => ZeTransferSubscription)
-  @OneToOne(() => ZeTransferSubscription)
+  @Field(() => ZeTransferSubscription, { nullable: true, defaultValue: null })
+  @OneToOne(() => ZeTransferSubscription, { nullable: true })
   @JoinColumn()
   zeTransferSubscription: ZeTransferSubscription;
 }
