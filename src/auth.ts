@@ -12,10 +12,6 @@ export const authChecker: AuthChecker<AuthCheckerType> = async (
   { context },
   roles
 ) => {
-  if (Array.isArray(roles) && roles.length !== 1) {
-    throw new Error("roles must be an array with one role or a string");
-  }
-
   const { token } = context;
   if (!token) {
     return false;
@@ -34,24 +30,26 @@ export const authChecker: AuthChecker<AuthCheckerType> = async (
         relations: [],
       });
 
-      if (!userFound) {
+      if (!userFound?.isActive) {
         return false;
       }
 
       context.user = userFound;
 
-      if (roles[0] === "admin") {
+      if (
+        (roles.length > 0 && roles[0] === "admin") ||
+        (typeof roles === "string" && roles === "admin")
+      ) {
         if (userFound.isAdmin) {
           return true;
         }
 
         return false;
       }
-
       return true;
     }
   } catch (error) {
     return false;
   }
-  return false; // or false if access is denied
+  return false;
 };

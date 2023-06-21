@@ -10,9 +10,9 @@ import {
 import { zeTransferSubscriptionRepository } from "../repositories/zeTransferSubscriptionRepository";
 import { ZeTransferSubscription } from "../entities/ZeTransferSubscription/ZeTransferSubscription";
 import { AuthCheckerType } from "../auth";
-import { ZeTransferSubscriptionCreateInput } from "../entities/ZeTransferSubscription/ZeTransferSubscriptionCreateInput";
 import { ZeTransferSubscriptionUpdateInput } from "../entities/ZeTransferSubscription/ZeTransferSubscriptionUpdateInput";
 import { ZeTransferSubscriptionCurrentUserUpdateInput } from "../entities/ZeTransferSubscription/ZeTransferSubscriptionCurrentUserUpdateInput";
+import { zeTransferSubscriptionPlanRepository } from "../repositories/zeTransferSubscriptionPlanRepository";
 
 @Resolver()
 export class ZeTransferSubscriptionsResolver {
@@ -20,7 +20,11 @@ export class ZeTransferSubscriptionsResolver {
   @Authorized("admin")
   @Query(() => [ZeTransferSubscription])
   async getSubscriptions(): Promise<ZeTransferSubscription[]> {
-    const subs = await zeTransferSubscriptionRepository.find();
+    const subs = await zeTransferSubscriptionRepository.find({
+      relations: {
+        zeTransferSubscriptionPlan: true,
+      },
+    });
     return subs;
   }
 
@@ -32,13 +36,11 @@ export class ZeTransferSubscriptionsResolver {
   ): Promise<ZeTransferSubscription | null> {
     const sub = await zeTransferSubscriptionRepository.findOne({
       where: { id },
-      relations: [],
+      relations: { zeTransferSubscriptionPlan: true },
     });
-
     if (!sub) {
       return null;
     }
-
     return sub;
   }
 
@@ -46,22 +48,28 @@ export class ZeTransferSubscriptionsResolver {
   @Authorized()
   @Mutation(() => ZeTransferSubscription, { nullable: true })
   async createSubscription(
-    @Arg("data", () => ZeTransferSubscriptionCreateInput)
-    data: ZeTransferSubscriptionCreateInput
-  ) {
-    try {
-      const newSub = {
-        ...data,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      const sub = await zeTransferSubscriptionRepository.save(newSub);
-
-      return sub;
-    } catch (error) {
-      throw new Error(JSON.stringify(error));
+    @Arg("isActive", () => Boolean) isActive: boolean,
+    @Arg("isYearly", () => Boolean) isYearly: boolean,
+    @Arg("zeTransferSubscriptionPlanId", () => Number)
+    zeTransferSubscriptionPlanId: number
+  ): Promise<ZeTransferSubscription | null> {
+    const newSub = new ZeTransferSubscription();
+    newSub.isActive = isActive;
+    newSub.isYearly = isYearly;
+    const plan = await zeTransferSubscriptionPlanRepository.findOneBy({
+      id: zeTransferSubscriptionPlanId,
+    });
+    if (plan) {
+      newSub.zeTransferSubscriptionPlan = plan;
+      newSub.createdAt = new Date();
+      newSub.updatedAt = new Date();
+      try {
+        return zeTransferSubscriptionRepository.save(newSub);
+      } catch (err) {
+        throw new Error(JSON.stringify(err));
+      }
     }
+    return null;
   }
 
   // update
@@ -92,12 +100,12 @@ export class ZeTransferSubscriptionsResolver {
   @Authorized()
   @Mutation(() => ZeTransferSubscription, { nullable: true })
   async updateCurrentUserSub(
-    @Ctx("context") context: AuthCheckerType,
+    @Ctx() context: AuthCheckerType,
     @Arg("data") data: ZeTransferSubscriptionCurrentUserUpdateInput
   ): Promise<ZeTransferSubscription | null> {
     const { user } = context;
 
-    if (!user) {
+    if (!user?.zeTransferSubscription) {
       return null;
     }
 

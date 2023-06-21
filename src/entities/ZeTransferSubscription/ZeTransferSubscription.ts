@@ -7,10 +7,11 @@ import {
   JoinColumn,
 } from "typeorm";
 import { ZeTransferSubscriptionPlan } from "../ZeTransferSubscriptionPlan/ZeTransferSubscriptionPlan";
+import { BaseEntity } from "../../utils/loadRelation";
 
 @Entity()
 @ObjectType()
-export class ZeTransferSubscription {
+export class ZeTransferSubscription extends BaseEntity {
   @PrimaryGeneratedColumn()
   @Field(() => ID)
   id: number;
@@ -32,7 +33,9 @@ export class ZeTransferSubscription {
   updatedAt: Date;
 
   @Field(() => ZeTransferSubscriptionPlan, { nullable: false })
-  @OneToOne(() => ZeTransferSubscriptionPlan, { nullable: false })
+  @OneToOne(() => ZeTransferSubscriptionPlan, {
+    nullable: false,
+  })
   @JoinColumn()
   zeTransferSubscriptionPlan: ZeTransferSubscriptionPlan;
 }

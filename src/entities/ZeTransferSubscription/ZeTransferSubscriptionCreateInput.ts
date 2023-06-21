@@ -1,4 +1,4 @@
-import { Field, ID, InputType } from "type-graphql";
+import { Field, InputType } from "type-graphql";
 
 @InputType()
 export class ZeTransferSubscriptionCreateInput {
@@ -8,6 +8,6 @@ export class ZeTransferSubscriptionCreateInput {
   @Field()
   isYearly: boolean;
 
-  @Field(() => ID)
+  @Field({nullable})
   zeTransferSubscriptionPlanId: number;
 }

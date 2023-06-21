@@ -3,18 +3,19 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  OneToOne,
   ManyToMany,
   OneToMany,
   JoinTable,
   JoinColumn,
+  ManyToOne,
 } from "typeorm";
 import { User } from "../User/User";
 import { File } from "../File/File";
+import { BaseEntity } from "../../utils/loadRelation";
 
 @Entity()
 @ObjectType()
-export class Transfer {
+export class Transfer extends BaseEntity {
   @PrimaryGeneratedColumn()
   @Field(() => ID)
   id: number;
@@ -40,16 +41,16 @@ export class Transfer {
   updatedAt: Date;
 
   @Field(() => User, { nullable: false })
-  @OneToOne(() => User, { nullable: false })
+  @ManyToOne(() => User, { nullable: false })
   @JoinColumn()
   createdBy: User;
 
-  @Field(() => [User])
-  @ManyToMany(() => User, (user) => user.transfers)
+  @Field(() => [User], { nullable: true })
+  @ManyToMany(() => User, (user: User) => user.transfers, { nullable: true })
   @JoinTable()
-  users: User;
+  users: User[];
 
-  @Field(() => [File])
-  @OneToMany(() => File, (file) => file.transfer)
+  @Field(() => [File], { nullable: true })
+  @OneToMany(() => File, (file: File) => file.transfer, { nullable: true })
   files: File[];
 }
