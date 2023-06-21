@@ -10,10 +10,11 @@ import {
 } from "typeorm";
 import { Transfer } from "../Transfer/Transfer";
 import { ZeTransferSubscription } from "../ZeTransferSubscription/ZeTransferSubscription";
+import { BaseEntity } from "../../utils/loadRelation";
 
 @Entity()
 @ObjectType()
-export class User {
+export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   @Field(() => ID)
   id: number;
@@ -33,13 +34,13 @@ export class User {
   @Field({ defaultValue: false })
   isAdmin: boolean;
 
+  @Column({ default: true })
+  @Field({ defaultValue: true })
+  isActive: boolean;
+
   @Column()
   @Field()
   createdAt: Date;
-
-  @Column({ default: 0 })
-  @Field()
-  remaining_storage: number;
 
   @Column()
   @Field()
@@ -48,7 +49,7 @@ export class User {
   @ManyToMany(() => User, (user) => user.contacts)
   parent: User[];
 
-  @Field(() => [User])
+  @Field(() => [User], { nullable: true })
   @ManyToMany(() => User, (user) => user.parent)
   @JoinTable()
   contacts: User[];
@@ -57,8 +58,8 @@ export class User {
   @ManyToMany(() => Transfer, (tr) => tr.users)
   transfers: Transfer[];
 
-  @Field(() => ZeTransferSubscription)
-  @OneToOne(() => ZeTransferSubscription)
+  @Field(() => ZeTransferSubscription, { nullable: true, defaultValue: null })
+  @OneToOne(() => ZeTransferSubscription, { nullable: true })
   @JoinColumn()
   zeTransferSubscription: ZeTransferSubscription;
 }

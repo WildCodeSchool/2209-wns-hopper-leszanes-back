@@ -16,6 +16,7 @@ import { UserWithTokenResponse } from "../entities/User/UserWithTokenResponse";
 import { getToken } from "../utils/getToken";
 import { AuthCheckerType } from "../auth";
 import { CurrentUserUpdateInput } from "../entities/User/CurrentUserUpdateInput";
+import { zeTransferSubscriptionRepository } from "../repositories/zeTransferSubscriptionRepository";
 
 @Resolver()
 export class UserResolver {
@@ -84,9 +85,30 @@ export class UserResolver {
   ): Promise<User | null> {
     const { user } = context;
 
+    if (!user) {
+      return null;
+    }
+
+    let sub;
+    if (data.zeTransferSubscriptionId) {
+      sub = await zeTransferSubscriptionRepository.findOne({
+        where: { id: data.zeTransferSubscriptionId },
+        relations: { zeTransferSubscriptionPlan: true },
+      });
+    } else {
+      sub = undefined;
+    }
+
+    if (sub === null) {
+      return null;
+    }
+
     const userUpdated = {
       ...user,
-      ...data,
+      name: data.name,
+      email: data.email,
+      isActive: data.isActive,
+      zeTransferSubscription: sub,
       updatedAt: new Date(),
     };
 
@@ -100,18 +122,33 @@ export class UserResolver {
   async updateUser(@Arg("data") data: UserUpdateInput): Promise<User | null> {
     const user = await userRepository.findOne({
       where: { id: data.id },
+      relations: { zeTransferSubscription: true },
     });
-
     if (!user) {
       return null;
     }
+    let sub;
+    if (data.zeTransferSubscriptionId) {
+      sub = await zeTransferSubscriptionRepository.findOne({
+        where: { id: data.zeTransferSubscriptionId },
+        relations: { zeTransferSubscriptionPlan: true },
+      });
+    } else {
+      sub = undefined;
+    }
 
+    if (sub === null) {
+      return null;
+    }
     const userUpdated = {
       ...user,
-      ...data,
+      name: data.name,
+      email: data.email,
+      isAdmin: data.isAdmin,
+      isActive: data.isActive,
+      zeTransferSubscription: sub,
       updatedAt: new Date(),
     };
-
     const result = await userRepository.save(userUpdated);
     return result;
   }
@@ -148,7 +185,7 @@ export class UserResolver {
         where: { email },
       });
 
-      if (!user || !(await verify(user.password, password))) {
+      if (!user?.isActive || !(await verify(user.password, password))) {
         return null;
       }
 
@@ -265,6 +302,25 @@ export class UserResolver {
       return true;
     } catch (error) {
       return false;
+    }
+  }
+
+  // attach contact
+  @Authorized()
+  @Query(() => [User], { nullable: true })
+  async getCurrentUserContacts(
+    @Ctx() context: AuthCheckerType
+  ): Promise<User[] | null> {
+    const { user } = context;
+    if (!user) {
+      return null;
+    }
+
+    try {
+      await user.loadRelation("contacts");
+      return user.contacts;
+    } catch (error) {
+      return null;
     }
   }
 }

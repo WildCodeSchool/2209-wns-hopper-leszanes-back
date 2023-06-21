@@ -1,5 +1,5 @@
 import { Length, Max, Min } from "class-validator";
-import { Field, InputType } from "type-graphql";
+import { Field, Float, InputType } from "type-graphql";
 
 @InputType()
 export class ZeTransferSubscriptionPlanCreateInput {
@@ -7,8 +7,8 @@ export class ZeTransferSubscriptionPlanCreateInput {
   @Length(2, 50)
   name: string;
 
-  @Field()
-  @Min(5)
+  @Field(() => Float)
+  @Min(2)
   @Max(100)
   price: number;
 

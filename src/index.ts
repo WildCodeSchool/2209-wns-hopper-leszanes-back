@@ -113,7 +113,7 @@ bootstrap()
 
     app.post("/files/upload", upload.array("files"), (req, res) => {
       const filesUpload = req.files;
-      const storageRemaning = 10000000;
+      const storageRemaning = 100000000000000000000;
       let totalSize = 0;
 
       if (filesUpload === undefined) {
@@ -135,21 +135,14 @@ bootstrap()
         if (totalSize > storageRemaning) {
           return res.json({
             status: "error",
-            message: "You don't have enough storage space",
+            message: "Vous n'avez pas assez d'espace de stockage",
           });
         }
         // MakeZip(file);
       }
-      console.log(filesUpload[0].originalname);
       return res.json({
-        status: "success",
-        message: "File uploaded successfully",
         // Quand les zips seront gérés, modifier les filesUpload[0] par le zip généré
-        data: {
-          fileName: filesUpload[0].filename,
-          size: filesUpload[0].size,
-          fileType: filesUpload[0].mimetype,
-        },
+        filesUpload,
       });
     });
 
