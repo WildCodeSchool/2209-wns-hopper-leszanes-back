@@ -14,6 +14,8 @@ import { AuthCheckerType } from "../auth";
 import { TransferUpdateInput } from "../entities/Transfer/TransferUpdateInput";
 import { TransferCurrentUserUpdateInput } from "../entities/Transfer/TransferCurrentUserUpdateInput";
 import { TransferCreateInput } from "../entities/Transfer/TransferCreateInput";
+import { User } from "../entities/User/User";
+import { userRepository } from "../repositories/userRepository";
 
 @Resolver()
 export class TransferResolver {
@@ -74,6 +76,47 @@ export class TransferResolver {
     }
 
     return transfer;
+  }
+
+  @Authorized()
+  @Query(() => [User], { nullable: true })
+  async getCurrentUserTransferUsers(
+    @Arg("id", () => ID) id: number,
+    @Ctx() context: AuthCheckerType
+  ): Promise<User[] | null> {
+    const { user } = context;
+
+    if (!user) {
+      return null;
+    }
+
+    const transfer = await transferRepository.findOne({
+      where: { id, createdBy: { id: user.id } },
+      relations: ["createdBy"],
+    });
+
+    if (!transfer) {
+      return null;
+    }
+
+    return transfer.loadRelation("users");
+  }
+
+  @Authorized("admin")
+  @Query(() => [User], { nullable: true })
+  async getTransferUsers(
+    @Arg("id", () => ID) id: number
+  ): Promise<User[] | null> {
+    const transfer = await transferRepository.findOne({
+      where: { id },
+      relations: ["createdBy"],
+    });
+
+    if (!transfer) {
+      return null;
+    }
+
+    return transfer.loadRelation("users");
   }
 
   // create
@@ -157,14 +200,32 @@ export class TransferResolver {
     if (!transfer) {
       return null;
     }
-    const transferUpdated = {
-      ...transfer,
-      ...data,
-      updatedAt: new Date(),
-    };
+
+    if (data.userIds) {
+      if (data.userIds.length > 0) {
+        const users = await userRepository.find({
+          where: {
+            id: In(data.userIds),
+          },
+        });
+        transfer.users = users;
+      } else {
+        transfer.users = [];
+      }
+    }
+
+    transfer.updatedAt = new Date();
+    if (data.name) {
+      transfer.name = data.name;
+    }
+    if (data.description) {
+      transfer.description = data.description;
+    }
 
     try {
-      const result = await transferRepository.save(transferUpdated);
+      const result = await transferRepository.save(transfer, {
+        reload: true,
+      });
       return result;
     } catch (error) {
       throw new Error(JSON.stringify(error));

@@ -13,4 +13,7 @@ export class TransferCurrentUserUpdateInput {
   @Field({ nullable: true })
   @Length(2, 255)
   description: string;
+
+  @Field(() => [ID], { nullable: true })
+  userIds?: number[];
 }
