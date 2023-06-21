@@ -13,6 +13,7 @@ import { Transfer } from "../entities/Transfer/Transfer";
 import { AuthCheckerType } from "../auth";
 import { TransferUpdateInput } from "../entities/Transfer/TransferUpdateInput";
 import { TransferCurrentUserUpdateInput } from "../entities/Transfer/TransferCurrentUserUpdateInput";
+import { TransferCreateInput } from "../entities/Transfer/TransferCreateInput";
 
 @Resolver()
 export class TransferResolver {
@@ -80,9 +81,7 @@ export class TransferResolver {
   @Mutation(() => Transfer, { nullable: true })
   async createTransfer(
     @Ctx() context: AuthCheckerType,
-    @Arg("name", () => String) name: string,
-    @Arg("description", () => String) description: string,
-    @Arg("isPrivate", () => Boolean) isPrivate: boolean
+    @Arg("data") data: TransferCreateInput
   ): Promise<Transfer | null> {
     const { user } = context;
 
@@ -92,9 +91,9 @@ export class TransferResolver {
 
     try {
       const newTransfer = new Transfer();
-      newTransfer.name = name;
-      newTransfer.description = description;
-      newTransfer.isPrivate = isPrivate;
+      newTransfer.name = data.name;
+      newTransfer.description = data.description;
+      newTransfer.isPrivate = data.isPrivate;
       newTransfer.createdBy = user;
       newTransfer.createdAt = new Date();
       newTransfer.updatedAt = new Date();

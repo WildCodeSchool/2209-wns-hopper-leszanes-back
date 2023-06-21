@@ -12,8 +12,8 @@ import { fileRepository } from "../repositories/fileRepository";
 import { FileCreateInput } from "../entities/File/FileCreateInput";
 import { FileUpdateInput } from "../entities/File/FileUpdateInput";
 import { AuthCheckerType } from "../auth";
-import { transferRepository } from "../repositories/transfertRepository";
 import { FileCurrentUserUpdateInput } from "../entities/File/FileCurrentUserUpdateInput";
+import { transferRepository } from "../repositories/transfertRepository";
 
 @Resolver()
 export class FileResolver {
@@ -50,7 +50,6 @@ export class FileResolver {
     if (!user) {
       return null;
     }
-
     const transfer = await transferRepository.findOne({
       where: { id: data.transferId },
     });
@@ -58,9 +57,10 @@ export class FileResolver {
     if (!transfer) {
       return null;
     }
-
     const newFile = {
-      ...data,
+      name: data.name,
+      size: data.size,
+      type: data.type,
       transfer,
       createdAt: new Date(),
       updatedAt: new Date(),
