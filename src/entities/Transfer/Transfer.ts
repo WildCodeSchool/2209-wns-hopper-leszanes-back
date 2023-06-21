@@ -46,11 +46,11 @@ export class Transfer extends BaseEntity {
   createdBy: User;
 
   @Field(() => [User], { nullable: true })
-  @ManyToMany(() => User, (user) => user.transfers, { nullable: true })
+  @ManyToMany(() => User, (user: User) => user.transfers, { nullable: true })
   @JoinTable()
   users: User[];
 
   @Field(() => [File], { nullable: true })
-  @OneToMany(() => File, (file) => file.transfer, { nullable: true })
+  @OneToMany(() => File, (file: File) => file.transfer, { nullable: true })
   files: File[];
 }
