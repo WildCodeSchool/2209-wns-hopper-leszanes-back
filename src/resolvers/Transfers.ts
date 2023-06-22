@@ -16,6 +16,8 @@ import { TransferCurrentUserUpdateInput } from "../entities/Transfer/TransferCur
 import { TransferCreateInput } from "../entities/Transfer/TransferCreateInput";
 import { User } from "../entities/User/User";
 import { userRepository } from "../repositories/userRepository";
+import { fileRepository } from "../repositories/fileRepository";
+import { File } from "../entities/File/File";
 
 @Resolver()
 export class TransferResolver {
@@ -100,6 +102,30 @@ export class TransferResolver {
     }
 
     return transfer.loadRelation("users");
+  }
+
+  @Authorized()
+  @Query(() => [File], { nullable: true })
+  async getCurrentUserTransferFiles(
+    @Arg("id", () => ID) id: number,
+    @Ctx() context: AuthCheckerType
+  ): Promise<File[] | null> {
+    const { user } = context;
+
+    if (!user) {
+      return null;
+    }
+
+    const transfer = await transferRepository.findOne({
+      where: { id, createdBy: { id: user.id } },
+      relations: ["createdBy"],
+    });
+
+    if (!transfer) {
+      return null;
+    }
+
+    return transfer.loadRelation("files");
   }
 
   @Authorized("admin")
@@ -211,6 +237,19 @@ export class TransferResolver {
         transfer.users = users;
       } else {
         transfer.users = [];
+      }
+    }
+
+    if (data.fileIds) {
+      if (data.fileIds.length > 0) {
+        const files = await fileRepository.find({
+          where: {
+            id: In(data.fileIds),
+          },
+        });
+        transfer.files = files;
+      } else {
+        transfer.files = [];
       }
     }
 
