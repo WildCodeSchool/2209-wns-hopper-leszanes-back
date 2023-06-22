@@ -59,6 +59,7 @@ export class FileResolver {
     }
     const newFile = {
       name: data.name,
+      fileName: data.fileName,
       size: data.size,
       type: data.type,
       transfer,
