@@ -15,6 +15,7 @@ import { TransferResolver } from "./resolvers/Transfers";
 import { ZeTransferSubscriptionsResolver } from "./resolvers/ZeTransferSubscriptions";
 import { ZeTransferSubscriptionPlansResolver } from "./resolvers/ZeTransferSubscriptionPlans";
 import { getFile } from "./Queries/getFile";
+import { sendMail } from "./utils/mails/sendMail";
 
 const GRAPHQL_PORT = 5000;
 const EXPRESS_PORT = 4000;
@@ -214,6 +215,30 @@ bootstrap()
       };
       setFileData().catch((error) => {
         console.log(error);
+      });
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    app.post("/mails/invite", async (req, res) => {
+      const { email } = req.body as { email: string };
+
+      if (!email) {
+        return res.json({
+          status: "error",
+          message: "No email found in the request",
+        });
+      }
+
+      // eslint-disable-next-line no-void
+      sendMail({
+        subject: "Invitation à rejoindre Zetransfer",
+        to: email,
+        html: `<p>Vous avez été invité(e) à rejoindre Zetransfer, cliquez sur le lien suivant pour vous inscrire: <a href="http://localhost:5173/register">http://localhost:5173/register</a></p>`,
+      });
+
+      return res.json({
+        status: "success",
+        message: "Email sent",
       });
     });
 

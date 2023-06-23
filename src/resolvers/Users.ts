@@ -305,7 +305,7 @@ export class UserResolver {
     }
   }
 
-  // attach contact
+  // get contacts
   @Authorized()
   @Query(() => [User], { nullable: true })
   async getCurrentUserContacts(
@@ -319,6 +319,29 @@ export class UserResolver {
     try {
       await user.loadRelation("contacts");
       return user.contacts;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  // get contacts
+  @Authorized()
+  @Query(() => User, { nullable: true })
+  async getCurrentUserContact(
+    @Ctx() context: AuthCheckerType,
+    @Arg("id", () => ID) id: number
+  ): Promise<User | null> {
+    const { user } = context;
+    if (!user) {
+      return null;
+    }
+
+    try {
+      await user.loadRelation("contacts");
+      return (
+        user.contacts.find((contact) => Number(contact.id) === Number(id)) ??
+        null
+      );
     } catch (error) {
       return null;
     }
