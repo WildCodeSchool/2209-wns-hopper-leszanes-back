@@ -138,11 +138,15 @@ bootstrap()
 
     app.get("/files/download", (req, res) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const { fileNames } = req.query;
+      const { filesData } = req.query as {
+        filesData:
+          | { fileName: string; name: string }
+          | { fileName: string; name: string }[];
+      };
 
-      if (Array.isArray(fileNames)) {
-        const files = fileNames.map((fileName) => {
-          return { path: `uploads/${String(fileName)}`, name: fileName };
+      if (Array.isArray(filesData)) {
+        const files = filesData.map((file) => {
+          return { path: `uploads/${String(file.fileName)}`, name: file.name };
         });
         // @ts-expect-error shit lib
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
@@ -150,7 +154,7 @@ bootstrap()
       }
 
       return res.download(
-        `uploads/${String(fileNames)}`,
+        `uploads/${String(filesData.fileName)}`,
         new Date().getTime().toString(),
         (err) => {
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
