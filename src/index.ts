@@ -1,8 +1,6 @@
 import "reflect-metadata";
 import multer from "multer";
 import compression from "compression";
-// import JSZip from "jszip";
-/* eslint-disable no-console */
 import { ApolloServer } from "apollo-server";
 import { buildSchema } from "type-graphql";
 import express from "express";
@@ -74,16 +72,7 @@ bootstrap()
     app.use(cors());
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
-    app.options("*", cors()); // include before other routes
-
-    // const renameFile = multer.diskStorage({
-    //   destination(req, file, cb) {
-    //     cb(null, "uploads/");
-    //   },
-    //   // filename(req, file, cb) {
-    //   //   cb(null, `${file.originalname}`);
-    //   // },
-    // });
+    app.options("*", cors());
 
     const upload = multer({
       dest: "uploads/",
@@ -138,59 +127,44 @@ bootstrap()
             message: "Vous n'avez pas assez d'espace de stockage",
           });
         }
-        // MakeZip(file);
       }
       return res.json({
-        // Quand les zips seront gérés, modifier les filesUpload[0] par le zip généré
         filesUpload,
       });
     });
+    // @ts-expect-error shit lib
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, global-require, @typescript-eslint/no-var-requires, vars-on-top, no-var, @typescript-eslint/no-unused-vars
+    var zip = require("express-zip");
 
-    // eslint-disable-next-line consistent-return
-    // app.post("/files/download", (req, res) => {
-    //   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    //   const { filename } = req.body;
+    app.get("/files/download", (req, res) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const { fileNames } = req.query;
 
-    //   if (!filename) {
-    //   // Pour upload un seul fichier
-    //   if (filesUpload.length === 1) {
-    //     upload.single("files");
+      if (Array.isArray(fileNames)) {
+        const files = fileNames.map((fileName) => {
+          return { path: `uploads/${String(fileName)}`, name: fileName };
+        });
+        // @ts-expect-error shit lib
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
+        return res.zip(files);
+      }
 
-    //     return res.json({
-    //       status: "Success",
-    //       message: "Une seul fichier à été uplaod",
-    //       data: {
-    //         nombre: filesUpload.length,
-    //         Nom: filesUpload[0].originalname,
-    //       },
-    //     });
-    //   }
-
-    //   // upload plusieurs fichiers
-    //   if (filesUpload.length > 1) {
-    //     for (const file of filesUpload) {
-    //       totalSize += file.size;
-    //       filesInfo.push(file.filename);
-    //       filesInfo.push(file.originalname.split("."));
-
-    //       if (totalSize > storageRemaning) {
-    //         return res.json({
-    //           status: "error",
-    //           message: "You don't have enough storage space",
-    //         });
-    //       }
-    //     }
-    //     upload.array("files");
-    //     return res.json({
-    //       status: "Success",
-    //       message: "Les fichiers ont été upload",
-    //       data: {
-    //         nombre: filesUpload.length,
-    //         Nom: filesInfo,
-    //       },
-    //     });
-    //   }
-    // });
+      return res.download(
+        `uploads/${String(fileNames)}`,
+        new Date().getTime().toString(),
+        (err) => {
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          if (!err) {
+            return;
+          }
+          // eslint-disable-next-line consistent-return
+          return res.json({
+            status: "error",
+            message: "File not found",
+          });
+        }
+      );
+    });
 
     // Télécharger un fichier via lien
 
