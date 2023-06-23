@@ -16,4 +16,7 @@ export class TransferCurrentUserUpdateInput {
 
   @Field(() => [ID], { nullable: true })
   userIds?: number[];
+
+  @Field(() => [ID], { nullable: true })
+  fileIds?: number[];
 }

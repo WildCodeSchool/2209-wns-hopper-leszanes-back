@@ -16,6 +16,8 @@ import { TransferCurrentUserUpdateInput } from "../entities/Transfer/TransferCur
 import { TransferCreateInput } from "../entities/Transfer/TransferCreateInput";
 import { User } from "../entities/User/User";
 import { userRepository } from "../repositories/userRepository";
+import { fileRepository } from "../repositories/fileRepository";
+import { File } from "../entities/File/File";
 
 @Resolver()
 export class TransferResolver {
@@ -41,25 +43,25 @@ export class TransferResolver {
       return null;
     }
 
-    const myTransfers = await transferRepository.find({
-      where: {
-        createdBy: {
-          id: user.id,
+    const transfers = await transferRepository.find({
+      where: [
+        {
+          createdBy: {
+            id: user.id,
+          },
         },
+        {
+          users: {
+            id: user.id,
+          },
+        },
+      ],
+      relations: ["createdBy"],
+      order: {
+        updatedAt: "DESC",
       },
-      relations: ["createdBy", "users", "files"],
     });
-    const sharedTransfers = await transferRepository
-      .createQueryBuilder("transfer")
-      .leftJoinAndSelect("transfer.users", "users")
-      .leftJoinAndSelect("transfer.files", "files")
-      .leftJoinAndSelect("transfer.createdBy", "createdBy")
-      .where("users.id = :id", { id: user.id })
-      .getMany();
-    const data = [...myTransfers, ...sharedTransfers].sort(
-      (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
-    );
-    return data;
+    return transfers;
   }
 
   // get by id
@@ -100,6 +102,32 @@ export class TransferResolver {
     }
 
     return transfer.loadRelation("users");
+  }
+
+  @Authorized()
+  @Query(() => [File], { nullable: true })
+  async getCurrentUserTransferFiles(
+    @Arg("id", () => ID) id: number,
+    @Ctx() context: AuthCheckerType
+  ): Promise<File[] | null> {
+    const { user } = context;
+
+    if (!user) {
+      return null;
+    }
+
+    const transfer = await transferRepository.findOne({
+      where: [
+        { id, createdBy: { id: user.id } },
+        { id, users: { id: user.id } },
+      ],
+      relations: ["createdBy"],
+    });
+
+    if (!transfer) {
+      return null;
+    }
+    return transfer.loadRelation("files");
   }
 
   @Authorized("admin")
@@ -211,6 +239,19 @@ export class TransferResolver {
         transfer.users = users;
       } else {
         transfer.users = [];
+      }
+    }
+
+    if (data.fileIds) {
+      if (data.fileIds.length > 0) {
+        const files = await fileRepository.find({
+          where: {
+            id: In(data.fileIds),
+          },
+        });
+        transfer.files = files;
+      } else {
+        transfer.files = [];
       }
     }
 
