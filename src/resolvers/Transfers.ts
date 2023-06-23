@@ -43,25 +43,25 @@ export class TransferResolver {
       return null;
     }
 
-    const myTransfers = await transferRepository.find({
-      where: {
-        createdBy: {
-          id: user.id,
+    const transfers = await transferRepository.find({
+      where: [
+        {
+          createdBy: {
+            id: user.id,
+          },
         },
+        {
+          users: {
+            id: user.id,
+          },
+        },
+      ],
+      relations: ["createdBy"],
+      order: {
+        updatedAt: "DESC",
       },
-      relations: ["createdBy", "users", "files"],
     });
-    const sharedTransfers = await transferRepository
-      .createQueryBuilder("transfer")
-      .leftJoinAndSelect("transfer.users", "users")
-      .leftJoinAndSelect("transfer.files", "files")
-      .leftJoinAndSelect("transfer.createdBy", "createdBy")
-      .where("users.id = :id", { id: user.id })
-      .getMany();
-    const data = [...myTransfers, ...sharedTransfers].sort(
-      (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
-    );
-    return data;
+    return transfers;
   }
 
   // get by id
