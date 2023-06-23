@@ -9,6 +9,10 @@ export class FileCreateInput {
   name: string;
 
   @Field()
+  @IsString()
+  fileName: string;
+
+  @Field()
   @Max(500_000_000)
   @IsNumber()
   size: number;

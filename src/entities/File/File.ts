@@ -16,6 +16,10 @@ export class File extends BaseEntity {
 
   @Column()
   @Field()
+  fileName: string;
+
+  @Column()
+  @Field()
   size: number;
 
   @Column()
