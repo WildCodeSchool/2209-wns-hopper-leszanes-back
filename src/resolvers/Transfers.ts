@@ -117,14 +117,16 @@ export class TransferResolver {
     }
 
     const transfer = await transferRepository.findOne({
-      where: { id, createdBy: { id: user.id } },
+      where: [
+        { id, createdBy: { id: user.id } },
+        { id, users: { id: user.id } },
+      ],
       relations: ["createdBy"],
     });
 
     if (!transfer) {
       return null;
     }
-
     return transfer.loadRelation("files");
   }
 
