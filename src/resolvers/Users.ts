@@ -63,7 +63,29 @@ export class UserResolver {
 
       const hashedPassword = await hash(newUser.password);
       newUser.password = hashedPassword;
+
       const user = await userRepository.save(newUser);
+
+      if (data.invitedBy) {
+        const invitedBy = await userRepository.findOne({
+          where: { email: data.invitedBy },
+          relations: ["contacts"],
+        });
+
+        if (!invitedBy) {
+          return null;
+        }
+
+        user.contacts = [invitedBy];
+
+        await userRepository.save(user);
+
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
+        invitedBy.contacts.push(user);
+
+        await userRepository.save(invitedBy);
+      }
 
       const token = getToken(user);
 
@@ -72,7 +94,11 @@ export class UserResolver {
         token,
       };
     } catch (error) {
-      throw new Error(JSON.stringify(error));
+      await userRepository.delete({ email: data.email });
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      // @ts-expect-error : error is an Error
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      throw new Error(error.message);
     }
   }
 

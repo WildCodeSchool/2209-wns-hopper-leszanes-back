@@ -17,4 +17,9 @@ export class UserCreateInput {
   @Length(12, 60)
   @IsStrongPassword()
   password: string;
+
+  @Field({ nullable: true })
+  @Length(7, 50)
+  @IsEmail()
+  invitedBy: string;
 }

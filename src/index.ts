@@ -173,6 +173,7 @@ bootstrap()
 
     // Télécharger un fichier via lien
 
+    // eslint-disable-next-line consistent-return
     app.get("/:filename", (req, res) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const { filename } = req.params;
@@ -200,11 +201,10 @@ bootstrap()
         };
         const fileType = fileData.data.getFile.type.split("/");
         const fileName = `${fileData.data.getFile.name}.${fileType[1]}`;
-        console.log(fileName);
         return res.download(file, fileName, (err) => {
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           if (!err) {
-            return;
+            return null;
           }
           // eslint-disable-next-line consistent-return
           return res.json({
@@ -214,13 +214,74 @@ bootstrap()
         });
       };
       setFileData().catch((error) => {
-        console.log(error);
+        console.error(error);
+        return res.json({
+          status: "error",
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+          message: error.message,
+        });
       });
     });
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    app.post("/mails/invite", async (req, res) => {
-      const { email } = req.body as { email: string };
+    app.post("/mails/invite", (req, res) => {
+      const { email, invitedBy } = req.body as {
+        email: string;
+        invitedBy: string;
+      };
+
+      if (!email || !invitedBy) {
+        return res.json({
+          status: "error",
+          message: "No email or invitedBy found in the request",
+        });
+      }
+
+      // eslint-disable-next-line no-void
+      sendMail({
+        subject: "Invitation à rejoindre Zetransfer",
+        to: email,
+        html: `<p>Vous avez été invité(e) à rejoindre Zetransfer, cliquez sur le lien suivant pour <a href="http://localhost:5173/register?email=${email.toLowerCase()}&invitedBy=${invitedBy}">vous inscrire</a></p>.`,
+      });
+
+      return res.json({
+        status: "success",
+        message: "Invation email sent",
+      });
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    app.post("/mails/new-contact", (req, res) => {
+      const { email, invitedBy } = req.body as {
+        email: string;
+        invitedBy: string;
+      };
+
+      if (!email || !invitedBy) {
+        return res.json({
+          status: "error",
+          message: "No email or invitedBy found in the request",
+        });
+      }
+
+      // eslint-disable-next-line no-void
+      sendMail({
+        subject: "Nouveau contact sur Zetransfer",
+        to: invitedBy,
+        html: `<p>L'utilisateur ${email.toLowerCase()} vous a ajouté à ses contacts sur Zetransfer, vous pouvez dès à présent lui envoyer des fichiers !</p>.`,
+      });
+
+      return res.json({
+        status: "success",
+        message: "New contact email sent",
+      });
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    app.post("/mails/new-account", (req, res) => {
+      const { email } = req.body as {
+        email: string;
+      };
 
       if (!email) {
         return res.json({
@@ -231,14 +292,19 @@ bootstrap()
 
       // eslint-disable-next-line no-void
       sendMail({
-        subject: "Invitation à rejoindre Zetransfer",
+        subject: "Bienvenue sur Zetransfer !",
         to: email,
-        html: `<p>Vous avez été invité(e) à rejoindre Zetransfer, cliquez sur le lien suivant pour vous inscrire: <a href="http://localhost:5173/register">http://localhost:5173/register</a></p>`,
+        html: `<h1>Hey, bienvenue sur Zetransfer !</h1>
+        <p>Vous êtes près pour l'aventure ?</p>
+        <p>Vous pouvez dès à présent envoyer des fichiers à vos contacts !</p><br>
+        <p>Si vous avez des questions, n'hésitez pas à nous contacter à l'adresse suivante : <a href="mailto:zetransfer.contact@gmail.com">zetransfer.contact@gmail.com</a></p>
+        <p>À bientôt !</p>
+        <p>L'équipe Zetransfer</p>`,
       });
 
       return res.json({
         status: "success",
-        message: "Email sent",
+        message: "New account email sent",
       });
     });
 

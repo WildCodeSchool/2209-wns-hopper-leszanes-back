@@ -17,13 +17,10 @@ export const sendMail = ({ subject, to, html }: SendMailParams) => {
       subject,
       html,
     },
-    (err, info) => {
+    (err) => {
       if (err) {
         // eslint-disable-next-line no-console
         throw new Error(err.message);
-      } else {
-        // eslint-disable-next-line no-console
-        console.log("Mail sent: ", info);
       }
     }
   );
