@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import "reflect-metadata";
 import multer from "multer";
 import compression from "compression";
@@ -73,7 +74,15 @@ bootstrap()
     app.use(cors());
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
-    app.options("*", cors());
+    app.options(
+      [
+        "http//locahost:5173",
+        "http//locahost:4173",
+        "https://staging.hopper1.wns.wilders.dev",
+        "https://hopper1.wns.wilders.dev",
+      ],
+      cors()
+    );
 
     const upload = multer({
       dest: "uploads/",
