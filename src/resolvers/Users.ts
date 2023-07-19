@@ -17,6 +17,7 @@ import { getToken } from "../utils/getToken";
 import { AuthCheckerType } from "../auth";
 import { CurrentUserUpdateInput } from "../entities/User/CurrentUserUpdateInput";
 import { zeTransferSubscriptionRepository } from "../repositories/zeTransferSubscriptionRepository";
+import { verifyMailToken } from "../utils/mails/verifyMailToken";
 
 @Resolver()
 export class UserResolver {
@@ -66,13 +67,11 @@ export class UserResolver {
 
       const user = await userRepository.save(newUser);
 
-      if (data.invitedBy) {
-        const invitedBy = await userRepository.findOne({
-          where: { email: data.invitedBy },
-          relations: ["contacts"],
-        });
+      if (data.token) {
+        const invitedBy = await verifyMailToken(data.token);
 
         if (!invitedBy) {
+          await userRepository.delete({ email: data.email });
           return null;
         }
 

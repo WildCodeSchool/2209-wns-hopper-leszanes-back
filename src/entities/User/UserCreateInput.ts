@@ -19,7 +19,5 @@ export class UserCreateInput {
   password: string;
 
   @Field({ nullable: true })
-  @Length(7, 50)
-  @IsEmail()
-  invitedBy: string;
+  token: string;
 }

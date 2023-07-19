@@ -17,6 +17,8 @@ import { ZeTransferSubscriptionsResolver } from "./resolvers/ZeTransferSubscript
 import { ZeTransferSubscriptionPlansResolver } from "./resolvers/ZeTransferSubscriptionPlans";
 import { getFile } from "./Queries/getFile";
 import { sendMail } from "./utils/mails/sendMail";
+import { getToken } from "./utils/getToken";
+import { verifyMailToken } from "./utils/mails/verifyMailToken";
 
 const GRAPHQL_PORT = 5000;
 const EXPRESS_PORT = 4000;
@@ -234,15 +236,28 @@ bootstrap()
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     app.post("/mails/invite", (req, res) => {
-      const { email, invitedBy } = req.body as {
+      const { userId, email, invitedBy } = req.body as {
+        userId: number;
         email: string;
         invitedBy: string;
       };
 
-      if (!email || !invitedBy) {
+      if (!email || !invitedBy || !userId) {
         return res.json({
           status: "error",
-          message: "No email or invitedBy found in the request",
+          message: "No email, userId, invitedBy or token found in the request",
+        });
+      }
+
+      const token = getToken(undefined, {
+        id: userId,
+        invitedBy: invitedBy.toLowerCase(),
+      });
+
+      if (!token) {
+        return res.json({
+          status: "error",
+          message: "No token found",
         });
       }
 
@@ -250,7 +265,7 @@ bootstrap()
       sendMail({
         subject: "Invitation à rejoindre Zetransfer",
         to: email,
-        html: `<p>Vous avez été invité(e) à rejoindre Zetransfer, cliquez sur le lien suivant pour <a href="http://localhost:5173/register?email=${email.toLowerCase()}&invitedBy=${invitedBy}">vous inscrire</a></p>.`,
+        html: `<p>Vous avez été invité(e) à rejoindre Zetransfer, cliquez sur le lien suivant pour <a href="http://localhost:5173/register?email=${email.toLowerCase()}&token=${token}">vous inscrire</a>.</p>`,
       });
 
       return res.json({
@@ -260,25 +275,36 @@ bootstrap()
     });
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    app.post("/mails/new-contact", (req, res) => {
-      const { email, invitedBy } = req.body as {
+    app.post("/mails/new-contact", async (req, res) => {
+      const { email, token } = req.body as {
         email: string;
-        invitedBy: string;
+        token: string;
       };
 
-      if (!email || !invitedBy) {
+      if (!email || !token) {
         return res.json({
           status: "error",
-          message: "No email or invitedBy found in the request",
+          message: "No email or token found in the request",
+        });
+      }
+
+      const invitedBy = await verifyMailToken(token);
+
+      if (!invitedBy) {
+        return res.json({
+          status: "error",
+          message: "No user found from the token",
         });
       }
 
       // eslint-disable-next-line no-void
       sendMail({
-        subject: "Nouveau contact sur Zetransfer",
-        to: invitedBy,
-        html: `<p>L'utilisateur ${email.toLowerCase()} vous a ajouté à ses contacts sur Zetransfer, vous pouvez dès à présent lui envoyer des fichiers !</p>.`,
+        subject: "🎉 Nouveau contact sur Zetransfer 🎉",
+        to: invitedBy.email,
+        html: `<p>L'utilisateur ${email.toLowerCase()} vous a ajouté à ses contacts sur Zetransfer, vous pouvez dès à présent lui envoyer des fichiers !</p>`,
       });
+
+      // invalidate token
 
       return res.json({
         status: "success",
@@ -301,7 +327,7 @@ bootstrap()
 
       // eslint-disable-next-line no-void
       sendMail({
-        subject: "Bienvenue sur Zetransfer !",
+        subject: "🎉 Bienvenue sur Zetransfer !",
         to: email,
         html: `<h1>Hey, bienvenue sur Zetransfer !</h1>
         <p>Vous êtes près pour l'aventure ?</p>
