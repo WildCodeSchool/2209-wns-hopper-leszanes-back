@@ -19,6 +19,7 @@ import { getFile } from "./Queries/getFile";
 import { sendMail } from "./utils/mails/sendMail";
 import { getToken } from "./utils/getToken";
 import { verifyMailToken } from "./utils/mails/verifyMailToken";
+import { hashFile } from "./utils/signatures/hashFile";
 
 const GRAPHQL_PORT = 5000;
 const EXPRESS_PORT = 4000;
@@ -112,7 +113,8 @@ bootstrap()
       },
     });
 
-    app.post("/files/upload", upload.array("files"), (req, res) => {
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    app.post("/files/upload", upload.array("files"), async (req, res) => {
       const filesUpload = req.files;
       const storageRemaning = 100000000000000000000;
       let totalSize = 0;
@@ -140,12 +142,20 @@ bootstrap()
           });
         }
       }
+      const filesWithHash = filesUpload.map((file) => {
+        return { ...file, signature: "" };
+      });
+
+      for (const file of filesWithHash) {
+        // eslint-disable-next-line
+        file.signature = await hashFile(file.path);
+      }
       return res.json({
-        filesUpload,
+        filesWithHash,
       });
     });
     // @ts-expect-error shit lib
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, global-require, @typescript-eslint/no-var-requires, vars-on-top, no-var, @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, global-require, @typescript-eslint/no-var-requires, vars-on-top, no-var, @typescript-eslint/no-unused-vars, import/no-extraneous-dependencies
     var zip = require("express-zip");
 
     app.get("/files/download", (req, res) => {

@@ -57,11 +57,14 @@ export class FileResolver {
     if (!transfer) {
       return null;
     }
+    console.log(data.signature);
+
     const newFile = {
       name: data.name,
       fileName: data.fileName,
       size: data.size,
       type: data.type,
+      signature: data.signature,
       transfer,
       createdAt: new Date(),
       updatedAt: new Date(),
