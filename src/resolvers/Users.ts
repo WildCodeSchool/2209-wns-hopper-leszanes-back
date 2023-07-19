@@ -17,6 +17,7 @@ import { getToken } from "../utils/getToken";
 import { AuthCheckerType } from "../auth";
 import { CurrentUserUpdateInput } from "../entities/User/CurrentUserUpdateInput";
 import { zeTransferSubscriptionRepository } from "../repositories/zeTransferSubscriptionRepository";
+import { verifyMailToken } from "../utils/mails/verifyMailToken";
 
 @Resolver()
 export class UserResolver {
@@ -63,7 +64,27 @@ export class UserResolver {
 
       const hashedPassword = await hash(newUser.password);
       newUser.password = hashedPassword;
+
       const user = await userRepository.save(newUser);
+
+      if (data.token) {
+        const invitedBy = await verifyMailToken(data.token);
+
+        if (!invitedBy) {
+          await userRepository.delete({ email: data.email });
+          return null;
+        }
+
+        user.contacts = [invitedBy];
+
+        await userRepository.save(user);
+
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
+        invitedBy.contacts.push(user);
+
+        await userRepository.save(invitedBy);
+      }
 
       const token = getToken(user);
 
@@ -72,7 +93,11 @@ export class UserResolver {
         token,
       };
     } catch (error) {
-      throw new Error(JSON.stringify(error));
+      await userRepository.delete({ email: data.email });
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      // @ts-expect-error : error is an Error
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      throw new Error(error.message);
     }
   }
 
@@ -305,7 +330,7 @@ export class UserResolver {
     }
   }
 
-  // attach contact
+  // get contacts
   @Authorized()
   @Query(() => [User], { nullable: true })
   async getCurrentUserContacts(
@@ -319,6 +344,29 @@ export class UserResolver {
     try {
       await user.loadRelation("contacts");
       return user.contacts;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  // get contacts
+  @Authorized()
+  @Query(() => User, { nullable: true })
+  async getCurrentUserContact(
+    @Ctx() context: AuthCheckerType,
+    @Arg("id", () => ID) id: number
+  ): Promise<User | null> {
+    const { user } = context;
+    if (!user) {
+      return null;
+    }
+
+    try {
+      await user.loadRelation("contacts");
+      return (
+        user.contacts.find((contact) => Number(contact.id) === Number(id)) ??
+        null
+      );
     } catch (error) {
       return null;
     }

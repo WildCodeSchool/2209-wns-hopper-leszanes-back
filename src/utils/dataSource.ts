@@ -13,8 +13,6 @@ if (
   process.env.DB_PASSWORD === undefined ||
   process.env.DB_NAME === undefined ||
   process.env.DB_USER === undefined
-  //  ||
-  // process.env.DB_HOST === undefined
 ) {
   throw new Error(
     "Please provide a valid database credientials in .env file with : DB_USER, DB_PASSWORD, DB_NAME and DB_HOST"

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import "reflect-metadata";
 import multer from "multer";
 import compression from "compression";
@@ -15,6 +16,9 @@ import { TransferResolver } from "./resolvers/Transfers";
 import { ZeTransferSubscriptionsResolver } from "./resolvers/ZeTransferSubscriptions";
 import { ZeTransferSubscriptionPlansResolver } from "./resolvers/ZeTransferSubscriptionPlans";
 import { getFile } from "./Queries/getFile";
+import { sendMail } from "./utils/mails/sendMail";
+import { getToken } from "./utils/getToken";
+import { verifyMailToken } from "./utils/mails/verifyMailToken";
 
 const GRAPHQL_PORT = 5000;
 const EXPRESS_PORT = 4000;
@@ -72,7 +76,15 @@ bootstrap()
     app.use(cors());
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
-    app.options("*", cors());
+    app.options(
+      [
+        "http//locahost:5173",
+        "http//locahost:4173",
+        "https://staging.hopper1.wns.wilders.dev",
+        "https://hopper1.wns.wilders.dev",
+      ],
+      cors()
+    );
 
     const upload = multer({
       dest: "uploads/",
@@ -172,6 +184,7 @@ bootstrap()
 
     // Télécharger un fichier via lien
 
+    // eslint-disable-next-line consistent-return
     app.get("/:filename", (req, res) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const { filename } = req.params;
@@ -199,11 +212,10 @@ bootstrap()
         };
         const fileType = fileData.data.getFile.type.split("/");
         const fileName = `${fileData.data.getFile.name}.${fileType[1]}`;
-        console.log(fileName);
         return res.download(file, fileName, (err) => {
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           if (!err) {
-            return;
+            return null;
           }
           // eslint-disable-next-line consistent-return
           return res.json({
@@ -213,7 +225,121 @@ bootstrap()
         });
       };
       setFileData().catch((error) => {
-        console.log(error);
+        console.error(error);
+        return res.json({
+          status: "error",
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+          message: error.message,
+        });
+      });
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    app.post("/mails/invite", (req, res) => {
+      const { userId, email, invitedBy } = req.body as {
+        userId: number;
+        email: string;
+        invitedBy: string;
+      };
+
+      if (!email || !invitedBy || !userId) {
+        return res.json({
+          status: "error",
+          message: "No email, userId, invitedBy or token found in the request",
+        });
+      }
+
+      const token = getToken(undefined, {
+        id: userId,
+        invitedBy: invitedBy.toLowerCase(),
+      });
+
+      if (!token) {
+        return res.json({
+          status: "error",
+          message: "No token found",
+        });
+      }
+
+      // eslint-disable-next-line no-void
+      sendMail({
+        subject: "Invitation à rejoindre Zetransfer",
+        to: email,
+        html: `<p>Vous avez été invité(e) à rejoindre Zetransfer, cliquez sur le lien suivant pour <a href="http://localhost:5173/register?email=${email.toLowerCase()}&token=${token}">vous inscrire</a>.</p>`,
+      });
+
+      return res.json({
+        status: "success",
+        message: "Invation email sent",
+      });
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    app.post("/mails/new-contact", async (req, res) => {
+      const { email, token } = req.body as {
+        email: string;
+        token: string;
+      };
+
+      if (!email || !token) {
+        return res.json({
+          status: "error",
+          message: "No email or token found in the request",
+        });
+      }
+
+      const invitedBy = await verifyMailToken(token);
+
+      if (!invitedBy) {
+        return res.json({
+          status: "error",
+          message: "No user found from the token",
+        });
+      }
+
+      // eslint-disable-next-line no-void
+      sendMail({
+        subject: "🎉 Nouveau contact sur Zetransfer 🎉",
+        to: invitedBy.email,
+        html: `<p>L'utilisateur ${email.toLowerCase()} vous a ajouté à ses contacts sur Zetransfer, vous pouvez dès à présent lui envoyer des fichiers !</p>`,
+      });
+
+      // invalidate token
+
+      return res.json({
+        status: "success",
+        message: "New contact email sent",
+      });
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    app.post("/mails/new-account", (req, res) => {
+      const { email } = req.body as {
+        email: string;
+      };
+
+      if (!email) {
+        return res.json({
+          status: "error",
+          message: "No email found in the request",
+        });
+      }
+
+      // eslint-disable-next-line no-void
+      sendMail({
+        subject: "🎉 Bienvenue sur Zetransfer !",
+        to: email,
+        html: `<h1>Hey, bienvenue sur Zetransfer !</h1>
+        <p>Vous êtes près pour l'aventure ?</p>
+        <p>Vous pouvez dès à présent envoyer des fichiers à vos contacts !</p><br>
+        <p>Si vous avez des questions, n'hésitez pas à nous contacter à l'adresse suivante : <a href="mailto:zetransfer.contact@gmail.com">zetransfer.contact@gmail.com</a></p>
+        <p>À bientôt !</p>
+        <p>L'équipe Zetransfer</p>`,
+      });
+
+      return res.json({
+        status: "success",
+        message: "New account email sent",
       });
     });
 

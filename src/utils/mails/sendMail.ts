@@ -6,19 +6,22 @@ export type SendMailParams = {
   html: string;
 };
 
-export const sendMail = async ({ subject, to, html }: SendMailParams) => {
+export const sendMail = ({ subject, to, html }: SendMailParams) => {
   if (!process.env.EMAIL_ADRESS) {
     throw new Error("Missing env variables EMAIL_ADRESS to provide mails");
   }
-  try {
-    await transporter.sendMail({
+  transporter.sendMail(
+    {
       from: `Zetransfer <${process.env.EMAIL_ADRESS}>`,
       to,
       subject,
       html,
-    });
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error("Error while sending mail: ", error);
-  }
+    },
+    (err) => {
+      if (err) {
+        // eslint-disable-next-line no-console
+        throw new Error(err.message);
+      }
+    }
+  );
 };
