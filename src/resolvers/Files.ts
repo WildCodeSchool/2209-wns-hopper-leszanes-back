@@ -57,7 +57,6 @@ export class FileResolver {
     if (!transfer) {
       return null;
     }
-    console.log(data.signature);
 
     const newFile = {
       name: data.name,

@@ -20,6 +20,7 @@ import { sendMail } from "./utils/mails/sendMail";
 import { getToken } from "./utils/getToken";
 import { verifyMailToken } from "./utils/mails/verifyMailToken";
 import { hashFile } from "./utils/signatures/hashFile";
+import { verifyHash } from "./utils/signatures/verifyHash";
 
 const GRAPHQL_PORT = 5000;
 const EXPRESS_PORT = 4000;
@@ -120,14 +121,14 @@ bootstrap()
       let totalSize = 0;
 
       if (filesUpload === undefined) {
-        return res.json({
+        return res.status(500).json({
           status: "error",
           message: "No file found in the request",
         });
       }
 
       if (!Array.isArray(filesUpload)) {
-        return res.json({
+        return res.status(500).json({
           status: "error",
           message: "Une erreur est survenue",
         });
@@ -136,7 +137,7 @@ bootstrap()
       for (const file of filesUpload) {
         totalSize += file.size;
         if (totalSize > storageRemaning) {
-          return res.json({
+          return res.status(500).json({
             status: "error",
             message: "Vous n'avez pas assez d'espace de stockage",
           });
@@ -158,38 +159,58 @@ bootstrap()
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, global-require, @typescript-eslint/no-var-requires, vars-on-top, no-var, @typescript-eslint/no-unused-vars, import/no-extraneous-dependencies
     var zip = require("express-zip");
 
-    app.get("/files/download", (req, res) => {
+    // eslint-disable-next-line consistent-return, @typescript-eslint/no-misused-promises
+    app.get("/files/download", async (req, res) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const { filesData } = req.query as {
         filesData:
-          | { fileName: string; name: string }
-          | { fileName: string; name: string }[];
+          | { fileName: string; name: string; signature: string }
+          | { fileName: string; name: string; signature: string }[];
       };
-
       if (Array.isArray(filesData)) {
-        const files = filesData.map((file) => {
-          return { path: `uploads/${String(file.fileName)}`, name: file.name };
-        });
+        // eslint-disable-next-line array-callback-return
+        const files: { path: string; name: string; signature: string }[] = [];
+        for (const file of filesData) {
+          console.log({ ...filesData });
+          // eslint-disable-next-line no-await-in-loop
+          const isOriginalHash = await verifyHash(
+            `uploads/${String(file.fileName)}`,
+            file.signature
+          );
+          if (isOriginalHash) {
+            files.push({
+              path: `uploads/${String(file.fileName)}`,
+              name: file.name,
+              signature: file.signature,
+            });
+            console.log(files);
+          }
+        }
+        console.log(files);
         // @ts-expect-error shit lib
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
         return res.zip(files);
       }
-
-      return res.download(
-        `uploads/${String(filesData.fileName)}`,
-        new Date().getTime().toString(),
-        (err) => {
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          if (!err) {
-            return;
+      verifyHash(`uploads/${String(filesData.fileName)}`, filesData.signature)
+        .then((isOriginalHash) => {
+          if (isOriginalHash) {
+            return res.download(
+              `uploads/${String(filesData.fileName)}`,
+              new Date().getTime().toString()
+            );
           }
-          // eslint-disable-next-line consistent-return
-          return res.json({
+          return res.status(500).json({
             status: "error",
-            message: "File not found",
+            message: "File signature does not correpond",
           });
-        }
-      );
+        })
+        .catch((err) => {
+          return res.status(500).json({
+            status: "error",
+            message: "File signature is not the same",
+            cause: JSON.stringify(err),
+          });
+        });
     });
 
     // Télécharger un fichier via lien
