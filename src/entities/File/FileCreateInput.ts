@@ -23,6 +23,10 @@ export class FileCreateInput {
   type: string;
 
   @Field()
+  @IsString()
+  signature: string;
+
+  @Field()
   @IsNumber()
   transferId: number;
 }

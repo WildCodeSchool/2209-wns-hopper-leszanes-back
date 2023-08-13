@@ -63,6 +63,7 @@ export class FileResolver {
         fileName: data.fileName,
         size: data.size,
         type: data.type,
+        signature: data.signature,
         transfer,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -74,7 +75,9 @@ export class FileResolver {
       // @ts-expect-error : error is an Error
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       throw new Error(error.message);
+
     }
+
   }
 
   // update
