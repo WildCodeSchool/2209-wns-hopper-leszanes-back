@@ -45,29 +45,36 @@ export class FileResolver {
     @Ctx() context: AuthCheckerType,
     @Arg("data") data: FileCreateInput
   ): Promise<File | null> {
-    const { user } = context;
+    try {
+      const { user } = context;
 
-    if (!user) {
-      return null;
-    }
-    const transfer = await transferRepository.findOne({
-      where: { id: data.transferId },
-    });
+      if (!user) {
+        return null;
+      }
+      const transfer = await transferRepository.findOne({
+        where: { id: data.transferId },
+      });
 
-    if (!transfer) {
-      return null;
+      if (!transfer) {
+        return null;
+      }
+      const newFile = {
+        name: data.name,
+        fileName: data.fileName,
+        size: data.size,
+        type: data.type,
+        transfer,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      const result = await fileRepository.save(newFile);
+      return result;
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      // @ts-expect-error : error is an Error
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      throw new Error(error.message);
     }
-    const newFile = {
-      name: data.name,
-      fileName: data.fileName,
-      size: data.size,
-      type: data.type,
-      transfer,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    const result = await fileRepository.save(newFile);
-    return result;
   }
 
   // update

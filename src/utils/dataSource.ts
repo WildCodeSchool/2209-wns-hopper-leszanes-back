@@ -6,6 +6,7 @@ import { File } from "../entities/File/File";
 import { Transfer } from "../entities/Transfer/Transfer";
 import { ZeTransferSubscription } from "../entities/ZeTransferSubscription/ZeTransferSubscription";
 import { ZeTransferSubscriptionPlan } from "../entities/ZeTransferSubscriptionPlan/ZeTransferSubscriptionPlan";
+import { Link } from "../entities/Link/Link";
 
 dotenv.config();
 
@@ -33,5 +34,6 @@ export const dataSource = new DataSource({
     Transfer,
     ZeTransferSubscription,
     ZeTransferSubscriptionPlan,
+    Link,
   ],
 });

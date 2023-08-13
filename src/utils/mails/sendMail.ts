@@ -19,7 +19,6 @@ export const sendMail = ({ subject, to, html }: SendMailParams) => {
     },
     (err) => {
       if (err) {
-        // eslint-disable-next-line no-console
         throw new Error(err.message);
       }
     }

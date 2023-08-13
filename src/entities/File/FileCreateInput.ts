@@ -4,7 +4,7 @@ import { Field, InputType } from "type-graphql";
 @InputType()
 export class FileCreateInput {
   @Field()
-  @Length(2, 50)
+  @Length(2, 200)
   @IsString()
   name: string;
 
@@ -13,12 +13,12 @@ export class FileCreateInput {
   fileName: string;
 
   @Field()
-  @Max(500_000_000)
+  @Max(500_000_000_000)
   @IsNumber()
   size: number;
 
   @Field()
-  @Length(2, 20)
+  @Length(2, 100)
   @IsString()
   type: string;
 
