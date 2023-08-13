@@ -8,10 +8,12 @@ import {
   JoinTable,
   JoinColumn,
   ManyToOne,
+  OneToOne,
 } from "typeorm";
 import { User } from "../User/User";
 import { File } from "../File/File";
 import { BaseEntity } from "../../utils/loadRelation";
+import { Link } from "../Link/Link";
 
 @Entity()
 @ObjectType()
@@ -53,4 +55,9 @@ export class Transfer extends BaseEntity {
   @Field(() => [File], { nullable: true })
   @OneToMany(() => File, (file: File) => file.transfer, { nullable: true })
   files: File[];
+
+  @Field(() => Link, { nullable: true, defaultValue: null })
+  @OneToOne(() => Link, { nullable: true })
+  @JoinColumn()
+  link: Link;
 }
