@@ -66,7 +66,10 @@ export class ZeTransferSubscriptionsResolver {
       try {
         return zeTransferSubscriptionRepository.save(newSub);
       } catch (err) {
-        throw new Error(JSON.stringify(err));
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        // @ts-expect-error : error is an Error
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        throw new Error(err.message);
       }
     }
     return null;

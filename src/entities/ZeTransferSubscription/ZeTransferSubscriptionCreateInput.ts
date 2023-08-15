@@ -8,6 +8,6 @@ export class ZeTransferSubscriptionCreateInput {
   @Field()
   isYearly: boolean;
 
-  @Field({nullable})
+  @Field({ nullable: true })
   zeTransferSubscriptionPlanId: number;
 }

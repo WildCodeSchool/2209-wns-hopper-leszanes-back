@@ -34,6 +34,10 @@ export class File extends BaseEntity {
   @Field()
   updatedAt: Date;
 
+  @Column()
+  @Field()
+  signature: string;
+
   @Field(() => Transfer, { nullable: false })
   @ManyToOne(() => Transfer, (transfer) => transfer.files, { nullable: false })
   transfer: Transfer;

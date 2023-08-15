@@ -1,24 +1,28 @@
 /* eslint-disable no-console */
-import "reflect-metadata";
-import multer from "multer";
-import compression from "compression";
 import { ApolloServer } from "apollo-server";
-import { buildSchema } from "type-graphql";
-import express from "express";
+import compression from "compression";
 import cors from "cors";
-import { graphql, GraphQLSchema, print } from "graphql";
-import { dataSource } from "./utils/dataSource";
-import { UserResolver } from "./resolvers/Users";
-import { FileResolver } from "./resolvers/Files";
+import express from "express";
+import { GraphQLSchema } from "graphql";
+import multer from "multer";
+import "reflect-metadata";
+import { buildSchema } from "type-graphql";
 import { authChecker } from "./auth";
-import { shouldCompress } from "./utils/shouldCompress";
+import { FileResolver } from "./resolvers/Files";
 import { TransferResolver } from "./resolvers/Transfers";
-import { ZeTransferSubscriptionsResolver } from "./resolvers/ZeTransferSubscriptions";
+import { UserResolver } from "./resolvers/Users";
 import { ZeTransferSubscriptionPlansResolver } from "./resolvers/ZeTransferSubscriptionPlans";
-import { getFile } from "./Queries/getFile";
-import { sendMail } from "./utils/mails/sendMail";
+import { ZeTransferSubscriptionsResolver } from "./resolvers/ZeTransferSubscriptions";
+import { dataSource } from "./utils/dataSource";
 import { getToken } from "./utils/getToken";
+import { sendMail } from "./utils/mails/sendMail";
 import { verifyMailToken } from "./utils/mails/verifyMailToken";
+
+import { hashFile } from "./utils/signatures/hashFile";
+import { verifyHash } from "./utils/signatures/verifyHash";
+
+import { shouldCompress } from "./utils/shouldCompress";
+
 
 const GRAPHQL_PORT = 5000;
 const EXPRESS_PORT = 4000;
@@ -89,43 +93,44 @@ bootstrap()
     const upload = multer({
       dest: "uploads/",
       limits: {
-        fileSize: 100000000,
+        fileSize: 100_000_000_000,
       },
       // storage: renameFile,
       fileFilter(_, file, cb) {
-        if (
-          !file.originalname.match(
-            /\.(jpg|jpeg|png|pdf|zip|rar|gzip|tar|doc|docx|xlsx|csv|txt|ppt|pptx|odt|ods|odp|odg|odf|odb|odc|odm|rtf|xls|xlsm|xlsb|xltx|xltm|xml|bmp|gif|svg|tif|tiff|eps|psd|ai|indd|raw|webp|mp3|wav|wma|aac|ogg|flac|aiff|mid|midi|wpl|7z|arj|deb|pkg|rpm|tar.gz|z|zipx|bin|dmg|iso|toast|vcd|csv|dat|db|dbf|log|mdb|sav|sql|tar|xml|email|eml|emlx|msg|oft|ost|pst|vcf|3g2|3gp|avi|flv|h264|m4v|mkv|mov|mp4|mpg|mpeg|rm|swf|vob|wmv|docx|docm|dotx|dotm|odt|ott|rtf|tex|txt|wks|wps|wpd|ods|ots|csv|dbf|dif|ods|ots|xlsm|xlsb|xlsx|xltx|xltm|xlsm|xlsb|xlsx|xltx|xltm|pptx|pptm|potx|potm|ppam|ppsx|ppsm|sldx|sldm|thmx|odp|otp|ppt|pps|pot|psd|tif|tiff|bmp|jpg|jpeg|gif|png|ai|drw|dxf|svg|eps|ps|ico|odg|otg|svg|vsd|vdx|vss|vst|vsx|vtx|wmf|emf|max|obj|sldprt|sldasm|slddrw|c4d|f3d|iam|ipt|step|stl|dwg|dwt|dxf|gbr|odp|otp|ppt|pps|pot|psd|tif|tiff|bmp|jpg|jpeg|gif|png|ai|drw|dxf|svg|eps|ps|ico|odg|otg|svg)$/
-          ) ||
-          !file.mimetype.match(
-            /^(image\/(jpg|jpeg|png|pdf|zip|rar|gzip|tar|doc|docx|xlsx|csv|txt|ppt|pptx|odt|ods|odp|odg|odf|odb|odc|odm|rtf|xls|xlsm|xlsb|xltx|xltm|xml|bmp|gif|svg|tif|tiff|eps|psd|ai|indd|raw|webp)|audio\/(mp3|wav|wma|aac|ogg|flac|aiff|mid|midi|wpl)|application\/(7z|arj|deb|pkg|rpm|tar.gz|z|zipx|bin|dmg|iso|toast|vcd)|text\/(csv|dat|db|dbf|log|mdb|sav|sql|tar|xml|plain)|message\/(email|eml|emlx|msg|oft|ost|pst|vcf)|video\/(3g2|3gp|avi|flv|h264|m4v|mkv|mov|mp4|mpg|mpeg|rm|swf|vob|wmv)|application\/(pdf|docx|docm|dotx|dotm|odt|ott|rtf|tex|txt|wks|wps|wpd|ods|ots|csv|dbf|dif|ods|ots|xlsm|xlsb|xlsx|xltx|xltm|xlsm|xlsb|xlsx|xltx|xltm|pptx|pptm|potx|potm|ppam|ppsx|ppsm|sldx|sldm|thmx|odp|otp|ppt|pps|pot|psd|tif|tiff|bmp|jpg|jpeg|gif|png|ai|drw|dxf|svg|eps|ps|ico|odg|otg|svg)|model\/(vsd|vdx|vss|vst|vsx|vtx|wmf|emf|max|obj|sldprt|sldasm|slddrw|c4d|f3d|iam|ipt|step|stl)|image\/(dwg|dwt|dxf|gbr|odp| otp|ppt|pps|pot|psd|tif|tiff|bmp|jpg|jpeg|gif|png|ai|drw|dxf|svg|eps|ps|ico|odg|otg|svg))$/
-          )
-        ) {
-          return cb(
-            new Error(
-              `Please a correct file type ${file.originalname} or ${file.mimetype} does not match the allowed file types`
-            )
-          );
-        }
+        // if (
+        //   !file.originalname.match(
+        //     /\.(jpg|jpeg|png|pdf|zip|rar|gzip|tar|doc|docx|xlsx|csv|txt|ppt|pptx|odt|ods|odp|odg|odf|odb|odc|odm|rtf|xls|xlsm|xlsb|xltx|xltm|xml|bmp|gif|svg|tif|tiff|eps|psd|ai|indd|raw|webp|mp3|wav|wma|aac|ogg|flac|aiff|mid|midi|wpl|7z|arj|deb|pkg|rpm|tar.gz|z|zipx|bin|dmg|iso|toast|vcd|csv|dat|db|dbf|log|mdb|sav|sql|tar|xml|email|eml|emlx|msg|oft|ost|pst|vcf|3g2|3gp|avi|flv|h264|m4v|mkv|mov|mp4|mpg|mpeg|rm|swf|vob|wmv|docx|docm|dotx|dotm|odt|ott|rtf|tex|txt|wks|wps|wpd|ods|ots|csv|dbf|dif|ods|ots|xlsm|xlsb|xlsx|xltx|xltm|xlsm|xlsb|xlsx|xltx|xltm|pptx|pptm|potx|potm|ppam|ppsx|ppsm|sldx|sldm|thmx|odp|otp|ppt|pps|pot|psd|tif|tiff|bmp|jpg|jpeg|gif|png|ai|drw|dxf|eps|ps|ico|odg|otg|vsd|vdx|vss|vst|vsx|vtx|wmf|emf|max|obj|sldprt|sldasm|slddrw|c4d|f3d|iam|ipt|step|stl|dwg|dwt|dxf|gbr|odp|otp|ppt|pps|pot|psd|tif|tiff|bmp|jpg|jpeg|gif|png|ai|drw|dxf|eps|ps|ico|odg|otg|pub)$/
+        //   ) ||
+        //   !file.mimetype.match(
+        //     /^(image\/(jpg|jpeg|png|pdf|zip|rar|gzip|tar|doc|docx|xlsx|csv|txt|ppt|pptx|odt|ods|odp|odg|odf|odb|odc|odm|rtf|xls|xlsm|xlsb|xltx|xltm|xml|bmp|gif|svg|tif|tiff|eps|psd|ai|indd|raw|webp|svg+xml)|audio\/(mp3|wav|wma|aac|ogg|flac|aiff|mid|midi|wpl)|application\/(7z|arj|deb|pkg|rpm|tar.gz|z|zipx|bin|dmg|iso|toast|vcd)|text\/(csv|dat|db|dbf|log|mdb|sav|sql|tar|xml|plain)|message\/(email|eml|emlx|msg|oft|ost|pst|vcf)|video\/(3g2|3gp|avi|flv|h264|m4v|mkv|mov|mp4|mpg|mpeg|rm|swf|vob|wmv)|application\/(pdf|docx|docm|dotx|dotm|odt|ott|rtf|tex|txt|wks|wps|wpd|ods|ots|csv|dbf|dif|ods|ots|xlsm|xlsb|xlsx|xltx|xltm|xlsm|xlsb|xlsx|xltx|xltm|pptx|pptm|potx|potm|ppam|ppsx|ppsm|sldx|sldm|thmx|odp|otp|ppt|pps|pot|psd|tif|tiff|bmp|jpg|jpeg|gif|png|ai|drw|dxf|svg|eps|ps|ico|odg|otg|svg|vnd.openxmlformats-officedocument.presentationml.presentation|vnd.openxmlformats-officedocument.spreadsheetml.sheet|vnd.openxmlformats-officedocument.wordprocessingml.document|vnd.ms-publisher)|model\/(vsd|vdx|vss|vst|vsx|vtx|wmf|emf|max|obj|sldprt|sldasm|slddrw|c4d|f3d|iam|ipt|step|stl)|xml)$/
+        //   )
+        // ) {
+        //   return cb(
+        //     new Error(
+        //       `Please provide correct file type : ${file.originalname} or ${file.mimetype} does not match the allowed file types`
+        //     )
+        //   );
+        // }
         cb(null, true);
         return null;
       },
     });
 
-    app.post("/files/upload", upload.array("files"), (req, res) => {
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    app.post("/files/upload", upload.array("files"), async (req, res) => {
       const filesUpload = req.files;
       const storageRemaning = 100000000000000000000;
       let totalSize = 0;
 
       if (filesUpload === undefined) {
-        return res.json({
+        return res.status(500).json({
           status: "error",
           message: "No file found in the request",
         });
       }
 
       if (!Array.isArray(filesUpload)) {
-        return res.json({
+        return res.status(500).json({
           status: "error",
           message: "Une erreur est survenue",
         });
@@ -134,107 +139,82 @@ bootstrap()
       for (const file of filesUpload) {
         totalSize += file.size;
         if (totalSize > storageRemaning) {
-          return res.json({
+          return res.status(500).json({
             status: "error",
             message: "Vous n'avez pas assez d'espace de stockage",
           });
         }
       }
+      const filesWithHash = filesUpload.map((file) => {
+        return { ...file, signature: "" };
+      });
+
+      for (const file of filesWithHash) {
+        // eslint-disable-next-line
+        file.signature = await hashFile(file.path);
+      }
       return res.json({
-        filesUpload,
+        filesWithHash,
       });
     });
     // @ts-expect-error shit lib
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, global-require, @typescript-eslint/no-var-requires, vars-on-top, no-var, @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, global-require, @typescript-eslint/no-var-requires, vars-on-top, no-var, @typescript-eslint/no-unused-vars, import/no-extraneous-dependencies
     var zip = require("express-zip");
 
-    app.get("/files/download", (req, res) => {
+    // eslint-disable-next-line consistent-return, @typescript-eslint/no-misused-promises
+    app.get("/files/download", async (req, res) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const { filesData } = req.query as {
         filesData:
-          | { fileName: string; name: string }
-          | { fileName: string; name: string }[];
+          | { fileName: string; name: string; signature: string }
+          | { fileName: string; name: string; signature: string }[];
       };
-
       if (Array.isArray(filesData)) {
-        const files = filesData.map((file) => {
-          return { path: `uploads/${String(file.fileName)}`, name: file.name };
-        });
+        // eslint-disable-next-line array-callback-return
+        const files: { path: string; name: string; signature: string }[] = [];
+        for (const file of filesData) {
+          console.log({ ...filesData });
+          // eslint-disable-next-line no-await-in-loop
+          const isOriginalHash = await verifyHash(
+            `uploads/${String(file.fileName)}`,
+            file.signature
+          );
+          if (isOriginalHash) {
+            files.push({
+              path: `uploads/${String(file.fileName)}`,
+              name: file.name,
+              signature: file.signature,
+            });
+            console.log(files);
+          }
+        }
+        console.log(files);
         // @ts-expect-error shit lib
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
         return res.zip(files);
       }
-
-      return res.download(
-        `uploads/${String(filesData.fileName)}`,
-        new Date().getTime().toString(),
-        (err) => {
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          if (!err) {
-            return;
+      verifyHash(`uploads/${String(filesData.fileName)}`, filesData.signature)
+        .then((isOriginalHash) => {
+          if (isOriginalHash) {
+            return res.download(
+              `uploads/${String(filesData.fileName)}`,
+              new Date().getTime().toString()
+            );
           }
-          // eslint-disable-next-line consistent-return
-          return res.json({
+          return res.status(500).json({
             status: "error",
-            message: "File not found",
+            message: "File signature does not correpond",
           });
-        }
-      );
-    });
-
-    // Télécharger un fichier via lien
-
-    // eslint-disable-next-line consistent-return
-    app.get("/:filename", (req, res) => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const { filename } = req.params;
-
-      if (!filename) {
-        return res.json({
-          status: "error",
-          message: "No filename found in the request",
-        });
-      }
-
-      if (filename === "favicon.ico") return res.status(204).end();
-
-      const file = `uploads/${filename}`;
-      const setFileData = async () => {
-        const fileData = (await graphql({
-          schema,
-          source: print(getFile),
-          variableValues: {
-            filename,
-          },
-        })) as {
-          data: { getFile: File };
-          errors?: [{ message: string }];
-        };
-        const fileType = fileData.data.getFile.type.split("/");
-        const fileName = `${fileData.data.getFile.name}.${fileType[1]}`;
-        return res.download(file, fileName, (err) => {
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          if (!err) {
-            return null;
-          }
-          // eslint-disable-next-line consistent-return
-          return res.json({
+        })
+        .catch((err) => {
+          return res.status(500).json({
             status: "error",
-            message: "File not found",
+            message: "File signature is not the same",
+            cause: JSON.stringify(err),
           });
         });
-      };
-      setFileData().catch((error) => {
-        console.error(error);
-        return res.json({
-          status: "error",
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-          message: error.message,
-        });
-      });
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     app.post("/mails/invite", (req, res) => {
       const { userId, email, invitedBy } = req.body as {
         userId: number;
@@ -312,7 +292,6 @@ bootstrap()
       });
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     app.post("/mails/new-account", (req, res) => {
       const { email } = req.body as {
         email: string;

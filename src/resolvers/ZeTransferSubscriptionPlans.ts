@@ -1,8 +1,8 @@
 import { Arg, Authorized, ID, Mutation, Query, Resolver } from "type-graphql";
 import { ZeTransferSubscriptionPlan } from "../entities/ZeTransferSubscriptionPlan/ZeTransferSubscriptionPlan";
-import { zeTransferSubscriptionPlanRepository } from "../repositories/zeTransferSubscriptionPlanRepository";
 import { ZeTransferSubscriptionPlanCreateInput } from "../entities/ZeTransferSubscriptionPlan/ZeTransferSubscriptionPlanCreateInput";
 import { ZeTransferSubscriptionPlanUpdateInput } from "../entities/ZeTransferSubscriptionPlan/ZeTransferSubscriptionPlanUpdateInput";
+import { zeTransferSubscriptionPlanRepository } from "../repositories/zeTransferSubscriptionPlanRepository";
 
 @Resolver()
 export class ZeTransferSubscriptionPlansResolver {
@@ -48,7 +48,10 @@ export class ZeTransferSubscriptionPlansResolver {
 
       return plan;
     } catch (error) {
-      throw new Error(JSON.stringify(error));
+      if (error instanceof Error) {
+        throw new Error(error.message);
+      }
+      throw new Error("An error occurred while creating the plan");
     }
   }
 
@@ -84,7 +87,6 @@ export class ZeTransferSubscriptionPlansResolver {
     const plan = await zeTransferSubscriptionPlanRepository.findOne({
       where: { id },
     });
-    console.log(plan);
     if (plan) {
       try {
         await zeTransferSubscriptionPlanRepository.delete(id);
