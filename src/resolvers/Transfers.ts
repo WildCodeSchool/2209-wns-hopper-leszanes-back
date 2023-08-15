@@ -1,23 +1,27 @@
 import {
-  Resolver,
-  Query,
-  Authorized,
   Arg,
-  ID,
+  Authorized,
   Ctx,
+  ID,
   Mutation,
+  Query,
+  Resolver,
 } from "type-graphql";
 import { In } from "typeorm";
-import { transferRepository } from "../repositories/transfertRepository";
-import { Transfer } from "../entities/Transfer/Transfer";
 import { AuthCheckerType } from "../auth";
-import { TransferUpdateInput } from "../entities/Transfer/TransferUpdateInput";
-import { TransferCurrentUserUpdateInput } from "../entities/Transfer/TransferCurrentUserUpdateInput";
-import { TransferCreateInput } from "../entities/Transfer/TransferCreateInput";
-import { User } from "../entities/User/User";
-import { userRepository } from "../repositories/userRepository";
-import { fileRepository } from "../repositories/fileRepository";
 import { File } from "../entities/File/File";
+import { Link } from "../entities/Link/Link";
+import { Transfer } from "../entities/Transfer/Transfer";
+import { TransferCreateInput } from "../entities/Transfer/TransferCreateInput";
+import { TransferCurrentUserUpdateInput } from "../entities/Transfer/TransferCurrentUserUpdateInput";
+import { TransferUpdateInput } from "../entities/Transfer/TransferUpdateInput";
+import { User } from "../entities/User/User";
+import { fileRepository } from "../repositories/fileRepository";
+import { linkRepository } from "../repositories/linkRespository";
+import { transferRepository } from "../repositories/transfertRepository";
+import { userRepository } from "../repositories/userRepository";
+import { getToken } from "../utils/getToken";
+import { sendMail } from "../utils/mails/sendMail";
 
 @Resolver()
 export class TransferResolver {
@@ -130,6 +134,32 @@ export class TransferResolver {
     return transfer.loadRelation("files");
   }
 
+  @Authorized()
+  @Query(() => Link, { nullable: true })
+  async getCurrentUserTransferLink(
+    @Arg("id", () => ID) id: number,
+    @Ctx() context: AuthCheckerType
+  ): Promise<Link | null> {
+    const { user } = context;
+
+    if (!user) {
+      return null;
+    }
+
+    const transfer = await transferRepository.findOne({
+      where: [
+        { id, createdBy: { id: user.id } },
+        { id, users: { id: user.id } },
+      ],
+      relations: ["createdBy"],
+    });
+
+    if (!transfer) {
+      return null;
+    }
+    return transfer.loadRelation("link");
+  }
+
   @Authorized("admin")
   @Query(() => [User], { nullable: true })
   async getTransferUsers(
@@ -166,14 +196,45 @@ export class TransferResolver {
       newTransfer.description = data.description;
       newTransfer.isPrivate = data.isPrivate;
       newTransfer.createdBy = user;
+
+      if (!data.isPrivate) {
+        const link = new Link();
+        link.createdAt = new Date();
+        link.updatedAt = new Date();
+        link.token = "token";
+        link.startDate = new Date(data.startDate);
+        if (data.endDate) {
+          link.endDate = new Date(data.endDate);
+        }
+        const token = getToken(undefined, {
+          id: newTransfer.id,
+          createdAt: link.createdAt,
+        });
+        link.token = token;
+        link.startDate = new Date(data.startDate);
+        if (data.endDate) {
+          link.endDate = new Date(data.endDate);
+        }
+        const savedLink = await linkRepository.save(link);
+
+        newTransfer.link = savedLink;
+      }
+
       newTransfer.createdAt = new Date();
       newTransfer.updatedAt = new Date();
 
       const transfer = await transferRepository.save(newTransfer);
 
+      if (!data.isPrivate) {
+        transfer.link = await transfer.loadRelation("link");
+      }
+
       return transfer;
     } catch (error) {
-      throw new Error(JSON.stringify(error));
+      if (error instanceof Error) {
+        throw new Error(error.message);
+      }
+      throw new Error("An unknown error occurred");
     }
   }
 
@@ -215,6 +276,8 @@ export class TransferResolver {
       return null;
     }
 
+    const contacts = await user.loadRelation("contacts");
+
     const transfer = await transferRepository.findOne({
       where: {
         id: data.id,
@@ -236,6 +299,52 @@ export class TransferResolver {
             id: In(data.userIds),
           },
         });
+
+        if (transfer.isPrivate) {
+          users.forEach((u) => {
+            if (!process.env.FRONTEND_URL) {
+              throw new Error(
+                "Missing env variables FRONTEND_URL to provide mails"
+              );
+            }
+
+            if (!transfer.users.find((tu) => tu.id === u.id)) {
+              try {
+                sendMail({
+                  subject: `🎉 ${user.name} vient de vous partager ${transfer.name} ! 🎉`,
+                  to: u.email,
+                  html: `<p>${user.name} vient de vous partager ${transfer.name}</p><p>Vous pouvez consulter et télécharger le contenu des fichiers partagés ici : <a href="${process.env.FRONTEND_URL}/transfers">${process.env.FRONTEND_URL}/transfers</a></p>`,
+                });
+              } catch (error) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                // @ts-expect-error : error is an Error
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                throw new Error(error.message);
+              }
+            }
+          });
+
+          transfer.users.forEach((tu) => {
+            if (!data.userIds?.find((u) => u === tu.id)) {
+              const theUser = contacts.find((c) => c.id === tu.id);
+              if (theUser) {
+                try {
+                  sendMail({
+                    subject: `${user.name} vient de vous retirer ${transfer.name} :(`,
+                    to: theUser.email,
+                    html: `<p>${user.name} vient de vous retirer les droits d'accès à ${transfer.name}.`,
+                  });
+                } catch (error) {
+                  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                  // @ts-expect-error : error is an Error
+                  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                  throw new Error(error.message);
+                }
+              }
+            }
+          });
+        }
+
         transfer.users = users;
       } else {
         transfer.users = [];
@@ -269,7 +378,10 @@ export class TransferResolver {
       });
       return result;
     } catch (error) {
-      throw new Error(JSON.stringify(error));
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      // @ts-expect-error : error is an Error
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      throw new Error(error.message);
     }
   }
 

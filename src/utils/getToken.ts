@@ -17,6 +17,9 @@ export const getToken = (user?: User, data: object | undefined = undefined) => {
     );
     return token;
   } catch (error: unknown) {
-    throw new Error(JSON.stringify(error));
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    // @ts-expect-error : error is an Error
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    throw new Error(error.message);
   }
 };
